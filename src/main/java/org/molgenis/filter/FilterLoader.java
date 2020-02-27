@@ -51,7 +51,7 @@ public class FilterLoader {
 
   private static void parseTree(Map<String, Filter> filters,
       LinkedHashMap<String, FilterStep> result, String data) {
-    String pattern = "([a-zA-Z0-9]*)\\t([a-zA-Z0-9]*)\\t([a-zA-Z0-9\\(\\)]*)\\t([a-zA-Z0-9\\(\\)]*)";
+    String pattern = "([a-zA-Z0-9]*)\\t([a-zA-Z0-9]*)\\t([a-zA-Z0-9_\\(\\)]*)\\t([a-zA-Z0-9_\\(\\)]*)";
     Pattern r = Pattern.compile(pattern);
     Matcher m = r.matcher(data);
     if (m.matches()) {
