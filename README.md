@@ -60,7 +60,7 @@ The type column should contain "simple" or be left empty.
 |\>=|greater or equal|VEP(gnomAD_AF) >= 0.05|
 |!=|not equal|SAMPLE(GT) != 0&#124;0|
 |in|field is present in the provided list|VEP(SYMBOL) in NMNAT1,PPT1,MUTYH,LMNA|
-|contains|specified field contains the specified string|TODO|
+|contains|specified field contains the specified string|VEP(Consequence) contains intron|
 
 ##### File
 The filter contains the following fields, seperated by spaces:
