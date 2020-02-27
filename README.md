@@ -18,7 +18,7 @@ This file contains a line for each variant in the input file, describing the rou
 filename is the input filename postfixed by "filter"
 
 ### Example cmd
--i C:\My\Folder\input.vcf -o C:\My\Folder\filter_output -r -q -f C:\My\Folder\filter.txt
+java -jar FilterTool.jar -i C:\My\Folder\input.vcf -o C:\My\Folder\filter_output -r -q -f C:\My\Folder\filter.txt
 
 ## The filter rule file
 ### Defining steps
