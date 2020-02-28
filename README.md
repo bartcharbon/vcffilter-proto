@@ -39,8 +39,10 @@ Info fields can be used by surrounding them by "INFO()", for example "INFO("MY_I
 ##### VEP
 VEP fields can be used by surrounding them by "VEP()", for example "VEP("SYMBOL")"
 ##### Sample
-Sample fields can be used by surrounding them by "SAMPLE()" and specifying the index of the sample, for example "SAMPLE("DP",0)" for the depth of the first sample in the VCF.
-Fields shoul be present in the FORMAT column of the variant.
+Sample fields can be used by surrounding them by "SAMPLE()".
+Optionally specifying the index of the sample, for example "SAMPLE("DP",0)" for the depth of the first sample in the VCF.
+If no index is given, for example "SAMPLE("GT")", all samples are tested, records with at lease one sample that pass the filter are retained.
+Fields should be present in the FORMAT column of the variant.
 
 #### Filters
 ##### Simple
@@ -66,14 +68,14 @@ The type column should contain "simple" or be left empty.
 The filter contains the following fields, seperated by spaces:
 - name of the column to use
 - operator, currently only "in" is supported
-- the path to the tsv file followed by a comma and the name of the column in the file that should contain the match.
+- the path of the tsv file, relative to the filter rule file, followed by a comma and the name of the column in the file that should contain the match.
 
 The type column should contain "file".
 
 ###### Supported operators
 |Operator|Operation|Example of the filter column|
 |---|---|---|
-|in|field is present in the provided file|VEP(SYMBOL) in C:\my\dir\myGenePanel.tsv,Gene|
+|in|field is present in the provided file|VEP(SYMBOL) in mysubdir\myGenePanel.tsv,Gene|
 ##### Complex
 The filter contains the following fields, seperated by spaces:
 - comma seperated list of filters
