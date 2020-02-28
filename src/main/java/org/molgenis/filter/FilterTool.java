@@ -33,11 +33,11 @@ public class FilterTool {
   private static final String FILTERFILE = "filterFile";
   private static final String FILTER_LABELS = "FILTER_LABELS";
   private static final String ROUTE = "route";
-  private static final String EXTENSION = ".vcf";//FIXME: vcf.gz should be supported
   private static final String OUTPUT_FILE_POSTFIX = ".filtered";
   private static final String FILTER_FILE_POSTFIX = ".filter";
   private static final String ROUTE_FILE_POSTFIX = ".route";
   private static final String TSV = ".tsv";
+  private static final String GZIP_EXTENSION = ".gz";
   private static boolean isLogRoute;
 
   public static void main(String[] args) {
@@ -86,8 +86,11 @@ public class FilterTool {
     }
 
     boolean isReplace = options.has(REPLACE);
-    String inputFileName = inputFile.getName().replace(EXTENSION,"");
-    File outputFile = createOutputFile(inputFileName, outputDir, OUTPUT_FILE_POSTFIX + EXTENSION, isReplace);
+
+    String fullInputFileName = inputFile.getName();
+    String extension = fullInputFileName.substring(fullInputFileName.indexOf("."));
+    String inputFileName = fullInputFileName.replace(extension,"");
+    File outputFile = createOutputFile(inputFileName, outputDir, OUTPUT_FILE_POSTFIX + extension, isReplace);
     File archivedFilterFile = createOutputFile(inputFileName, outputDir, FILTER_FILE_POSTFIX+TSV, isReplace);
     File routesFile = createOutputFile(inputFileName, outputDir, ROUTE_FILE_POSTFIX+TSV, isReplace);
 
@@ -109,8 +112,9 @@ public class FilterTool {
       }
       Writer routesWriter = getRoutesWriter(routesFile);
 
-      VcfReader reader = getVcfReader(inputFile);
-      VcfWriter vcfWriter = getVcfWriter(outputFile, reader.getVcfMeta(), additionalHeaders);
+      VcfReader reader = getVcfReader(inputFile, extension.endsWith(GZIP_EXTENSION));
+      VcfWriter vcfWriter = getVcfWriter(outputFile, reader.getVcfMeta(), additionalHeaders, extension.endsWith(
+          GZIP_EXTENSION));
 
       Stream<VcfRecord> recordStream = StreamSupport
           .stream(reader.spliterator(), false);

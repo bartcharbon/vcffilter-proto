@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.StreamSupport;
+import net.sf.samtools.util.BlockCompressedInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.molgenis.vcf.VcfInfo;
 import org.molgenis.vcf.VcfReader;
@@ -23,6 +24,7 @@ import org.molgenis.vcf.VcfRecord;
 import org.molgenis.vcf.VcfSample;
 import org.molgenis.vcf.VcfWriter;
 import org.molgenis.vcf.VcfWriterFactory;
+import org.molgenis.vcf.VcfWriterFactory.Format;
 import org.molgenis.vcf.meta.VcfMeta;
 import org.molgenis.vcf.meta.VcfMetaInfo;
 
@@ -177,15 +179,20 @@ public class VcfUtils {
   }
 
   public static VcfWriter getVcfWriter(File outputVCFFile, VcfMeta vcfMeta,
-      Map<String, String> additionalHeaders) throws IOException {
+      Map<String, String> additionalHeaders, boolean isCompressed) throws IOException {
     VcfWriterFactory vcfWriterFactory = new VcfWriterFactory();
     additionalHeaders.entrySet().forEach(header -> vcfMeta.add(header.getKey(), header.getValue()));
-    return vcfWriterFactory.create(outputVCFFile, vcfMeta);
+    Format format = isCompressed?Format.GZIP:Format.UNCOMPRESSED;
+    return vcfWriterFactory.create(outputVCFFile, vcfMeta, format);
   }
 
-  public static VcfReader getVcfReader(File inputVcfFile) throws FileNotFoundException {
+  public static VcfReader getVcfReader(File inputVcfFile, boolean isCompressed) throws FileNotFoundException {
+    if(isCompressed) {
+      return new VcfReader(
+          new BlockCompressedInputStream(new FileInputStream(inputVcfFile)));
+    }
     return new VcfReader(
-        new InputStreamReader(new FileInputStream(inputVcfFile), StandardCharsets.UTF_8));
+        new InputStreamReader(new FileInputStream(inputVcfFile)));
   }
 
   static VcfInfo getInfoField(VcfRecord record, String field) {
