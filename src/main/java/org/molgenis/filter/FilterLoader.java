@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -16,11 +17,14 @@ import javax.annotation.Nullable;
 
 public class FilterLoader {
 
+  private static final String PARAM_PREFIX = "{{";
+  private static final String PARAM_POSTFIX = "}}";
+
   private FilterLoader() {
 
   }
 
-  public static Map<String, FilterStep> loadFilters(File inputFile)
+  public static Map<String, FilterStep> loadFilters(File inputFile, Map<String,String> params)
       throws FileNotFoundException {
     Path path = Paths.get(inputFile.getAbsolutePath());
     String workingDir = path.getParent().toString();
@@ -42,7 +46,7 @@ public class FilterLoader {
           }
         } else {
           if (isParseSteps) {
-            parseSteps(filters, data, workingDir);
+            parseSteps(filters, data, workingDir, params);
           } else if (isParseTree) {
             parseTree(filters, result, data);
           }
@@ -60,7 +64,7 @@ public class FilterLoader {
     Matcher m = r.matcher(data);
     if (m.matches()) {
       String key = m.group(1);
-      String filterStep  = m.group(2);
+      String filterStep = m.group(2);
       FilterAction trueAction = toAction(m.group(3));
       FilterAction falseAction = toAction(m.group(4));
       Filter filter = filters.get(filterStep);
@@ -72,7 +76,7 @@ public class FilterLoader {
     }
   }
 
-  private static void parseSteps(Map<String, Filter> filters, String data, String path) {
+  private static void parseSteps(Map<String, Filter> filters, String data, String path, Map<String, String> params) {
     String pattern = "([a-zA-Z0-9]*)\\t([^\\t]*)\\t*((\\b(simple)\\b|\\b(complex)\\b|\\b(file)\\b)*)";
     Pattern r = Pattern.compile(pattern);
     Matcher m = r.matcher(data);
@@ -82,7 +86,7 @@ public class FilterLoader {
       key = m.group(1);
       filterString = m.group(2);
       FilterType type = toType(m.group(3));
-      Filter filter = parseFilterString(filterString, type, filters, path);
+      Filter filter = parseFilterString(filterString, type, filters, path, params);
       filters.put(key, filter);
     } else {
       throw new IllegalArgumentException(
@@ -99,7 +103,11 @@ public class FilterLoader {
   }
 
   private static Filter parseFilterString(String filterString, FilterType type,
-      Map<String, Filter> currentFilters, String path) {
+      Map<String, Filter> currentFilters, String path, Map<String,String> params) {
+    for(Entry<String,String> entry:params.entrySet()) {
+      String key = PARAM_PREFIX +entry.getKey()+ PARAM_POSTFIX;
+      filterString = filterString.replace(key,entry.getValue());
+    }
     String[] values = filterString.split(" ");
     String field = values[0];
     String operator = values[1];

@@ -8,6 +8,7 @@
 |-o| --output <File>|The directory to write the ouput to|              
 |-q| --route|Generate a 'route' file|
 |-r| --replace|Enables output files overwrite|
+|-p| --replace|Parameters in the format key=value;key=value|
 
 ### Output
 The tool produces a number of files:
@@ -87,6 +88,23 @@ The type column should contain "complex".
 |---|---|---|
 |AND|All of the provided filters are true|filter1,filter2,filter3 AND|
 |OR|Any of the provided filters is true|filter1,filter2,filter3 OR|
+
+##### Parameters
+Parameters to be replaced in the filter rule file can be provided by using double curly braces.
+Throse keys are replaced by the values specified in the '-p' option.
+###### Example
+####### filter value
+```
+VEP(SYMBOL) in {{PARAM1}},Gene
+```
+####### -q option in the command
+```
+-q=PARAM1=genePanel.tsv
+```
+####### value used to create the filter
+```
+VEP(SYMBOL) in genePanel.tsv,Gene
+```
 
 ### Defining the tree
 To define the tree, simply add a line with "#Tree" as content.

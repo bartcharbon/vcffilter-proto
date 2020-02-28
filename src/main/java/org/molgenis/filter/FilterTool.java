@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -30,6 +31,7 @@ public class FilterTool {
   public static final String INPUT = "input";
   public static final String OUTPUT = "output";
   public static final String REPLACE = "replace";
+  public static final String PARAMS = "params";
   private static final String FILTERFILE = "filterFile";
   private static final String FILTER_LABELS = "FILTER_LABELS";
   private static final String ROUTE = "route";
@@ -55,6 +57,7 @@ public class FilterTool {
     parser.acceptsAll(asList("o", OUTPUT), "Output directory").withRequiredArg().ofType(File.class);
     parser.acceptsAll(asList("r", REPLACE), "Enables output files overwrite");
     parser.acceptsAll(asList("q", ROUTE), "Generate a 'route' file");
+    parser.acceptsAll(asList("p", PARAMS), "Parameters to be replaced in the filter file, formet 'KEY1=VALUE1;KEY2=VALUE2'").withRequiredArg().ofType(String.class);;
     return parser;
   }
 
@@ -98,8 +101,15 @@ public class FilterTool {
       isLogRoute = true;
     }
 
+    Map<String, String> params;
+    if(options.hasArgument(PARAMS)){
+      params = loadParams(options.valueOf(PARAMS).toString());
+    }else{
+      params = Collections.emptyMap();
+    }
+
     try {
-      Map<String, FilterStep> filters = loadFilters(filterFile);
+      Map<String, FilterStep> filters = loadFilters(filterFile, params);
 
       try (FileOutputStream copyStream = new FileOutputStream(archivedFilterFile)) {
         Files.copy(filterFile.toPath(), copyStream);
@@ -135,6 +145,20 @@ public class FilterTool {
     } catch (Exception e) {
       e.printStackTrace();
     }
+  }
+
+  private Map<String, String> loadParams(String paramString) {
+    Map<String, String> params = new HashMap<>();
+    String[] paramsArray = paramString.split(";");
+    for(String param : paramsArray){
+      String[] paramArray = param.split("=");
+      if(paramArray.length == 2){
+        params.put(paramArray[0],paramArray[1]);
+      }else{
+        throw new RuntimeException("Params should be of format 'key=value'");
+      }
+    }
+    return params;
   }
 
   private File createOutputFile(String inputFileName, File outputDir,
