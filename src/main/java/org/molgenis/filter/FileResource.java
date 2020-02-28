@@ -24,7 +24,7 @@ public class FileResource {
       loadHeader(scanner);
       loadValues(scanner);
     } catch (FileNotFoundException e) {
-      throw new RuntimeException("File '"+file.getName()+"' not found.");
+      throw new RuntimeException("File '"+file.getAbsolutePath()+"' not found.");
     }
   }
 
