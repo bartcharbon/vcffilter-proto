@@ -28,7 +28,7 @@ public class SampleFilter implements Filter {
     this.field = requireNonNull(field);
     this.operator = requireNonNull(operator);
     this.filterValue = requireNonNull(value);
-    this.sampleId = requireNonNull(sampleId);
+    this.sampleId = sampleId;
   }
 
   @Override
@@ -118,6 +118,9 @@ public class SampleFilter implements Filter {
   }
 
   private Integer getSampleIndex(VcfMeta vcfMeta, String sampleId) {
+    if(sampleId == null){
+      return null;
+    }
     int i=0;
     Iterator<String> names = vcfMeta.getSampleNames().iterator();
     while(names.hasNext()){
