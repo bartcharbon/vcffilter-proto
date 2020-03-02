@@ -9,6 +9,7 @@
 |-q| --route|Generate a 'route' file|
 |-r| --replace|Enables output files overwrite|
 |-p| --replace|Parameters in the format key=value;key=value|
+|-s| --sample|Identifier of the sample to filter on|
 
 ### Output
 The tool produces a number of files:
@@ -42,7 +43,9 @@ VEP fields can be used by surrounding them by "VEP()", for example "VEP("SYMBOL"
 ##### Sample
 Sample fields can be used by surrounding them by "SAMPLE()".
 Optionally specifying the index of the sample, for example "SAMPLE("DP",0)" for the depth of the first sample in the VCF.
-If no index is given, for example "SAMPLE("GT")", all samples are tested, records with at lease one sample that pass the filter are retained.
+WARNING: specifying the index in your filter will make your filter ignore the "-s" option.
+If no index is given, and a sample identifier is specified via the '-s' command, the index of this sample is used to.
+If no index is given, and no sample identifier is specified via the '-s' command, for example "SAMPLE("GT")", all samples are tested, records with at lease one sample that pass the filter are retained.
 Fields should be present in the FORMAT column of the variant.
 
 #### Filters

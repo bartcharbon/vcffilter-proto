@@ -31,7 +31,7 @@ import org.molgenis.vcf.utils.VepUtils;
 public class SimpleFilter implements Filter {
 
   private static final String VEP = "VEP";
-  private static final String BRACET = "(";
+  static final String BRACET = "(";
   private final String field;
   private final SimpleOperator operator;
   private final String filterValue;
@@ -159,53 +159,13 @@ public class SimpleFilter implements Filter {
       case FORMAT:
         throw new IllegalArgumentException("Field [" + field + "] is currently unsupported");
       default:
-        if (field.startsWith(SAMPLE + BRACET)) {
-          value = getSampleValue(record, field);
-        } else if (field.startsWith(INFO + BRACET)) {
+       if (field.startsWith(INFO + BRACET)) {
           //FIXME: always assumes String for info field
           String info = field.substring(5, field.length() - 1);
           value = getInfoFieldValue(record, info);
         } else {
           throw new IllegalArgumentException("Field [" + field + "] is unsupported");
         }
-    }
-    return value;
-  }
-
-  private Object getSampleValue(VcfRecord record, String field) {
-    Object value;
-    String pattern = SAMPLE + "\\(([a-zA-Z]*)(\\,(\\d*))*\\)";
-    Pattern r = Pattern.compile(pattern);
-    Matcher m = r.matcher(field);
-    Integer sampleIndex;
-    String sampleFieldName;
-    if (m.matches()) {
-      sampleFieldName = m.group(1);
-      sampleIndex = m.group(3) != null ? Integer.valueOf(m.group(3)) : null;
-      value = getSampleValue(record, sampleFieldName, sampleIndex);
-    } else {
-      throw new IllegalArgumentException(
-          "Sample field is not correctly formatted, valid examples: 'SAMPLE(GT)','SAMPLE(GT,0)'");
-    }
-    return value;
-  }
-
-  private Object getSampleValue(VcfRecord record, String sampleFieldName, Integer index) {
-    String[] format = record.getFormat();
-    int sampleFieldIndex = ArrayUtils.indexOf(format, sampleFieldName);
-    Object value;
-    if (index != null) {
-      VcfSample sample = com.google.common.collect.Iterators
-          .get(record.getSamples().iterator(), index, null);
-      if (sample != null) {
-        value = sample.getData(sampleFieldIndex);
-      } else {
-        throw new IllegalStateException("Specified sample index does not exist.");
-      }
-    } else {
-      value = new ArrayList<String>();
-      record.getSamples()
-          .forEach(sample -> ((List<String>) value).add(sample.getData(sampleFieldIndex)));
     }
     return value;
   }

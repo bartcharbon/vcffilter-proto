@@ -31,6 +31,7 @@ public class FilterTool {
   public static final String INPUT = "input";
   public static final String OUTPUT = "output";
   public static final String REPLACE = "replace";
+  public static final String SAMPLE = "sample";
   public static final String PARAMS = "params";
   private static final String FILTERFILE = "filterFile";
   private static final String FILTER_LABELS = "FILTER_LABELS";
@@ -58,6 +59,7 @@ public class FilterTool {
     parser.acceptsAll(asList("r", REPLACE), "Enables output files overwrite");
     parser.acceptsAll(asList("q", ROUTE), "Generate a 'route' file");
     parser.acceptsAll(asList("p", PARAMS), "Parameters to be replaced in the filter file, formet 'KEY1=VALUE1;KEY2=VALUE2'").withRequiredArg().ofType(String.class);;
+    parser.acceptsAll(asList("s", SAMPLE), "Sample identifier").withRequiredArg().ofType(String.class);
     return parser;
   }
 
@@ -108,8 +110,13 @@ public class FilterTool {
       params = Collections.emptyMap();
     }
 
+    String sampleId = null;
+    if(options.hasArgument(SAMPLE)){
+      sampleId = options.valueOf(SAMPLE).toString();
+    }
+
     try {
-      Map<String, FilterStep> filters = loadFilters(filterFile, params);
+      Map<String, FilterStep> filters = loadFilters(filterFile, params, sampleId);
 
       try (FileOutputStream copyStream = new FileOutputStream(archivedFilterFile)) {
         Files.copy(filterFile.toPath(), copyStream);

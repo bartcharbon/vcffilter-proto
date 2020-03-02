@@ -1,5 +1,8 @@
 package org.molgenis.filter;
 
+import static org.molgenis.filter.SimpleFilter.BRACET;
+import static org.molgenis.vcf.utils.VcfConstants.SAMPLE;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.nio.file.Path;
@@ -24,7 +27,7 @@ public class FilterLoader {
 
   }
 
-  public static Map<String, FilterStep> loadFilters(File inputFile, Map<String,String> params)
+  public static Map<String, FilterStep> loadFilters(File inputFile, Map<String,String> params, String sampleId)
       throws FileNotFoundException {
     Path path = Paths.get(inputFile.getAbsolutePath());
     String workingDir = path.getParent().toString();
@@ -46,7 +49,7 @@ public class FilterLoader {
           }
         } else {
           if (isParseSteps) {
-            parseSteps(filters, data, workingDir, params);
+            parseSteps(filters, data, workingDir, params, sampleId);
           } else if (isParseTree) {
             parseTree(filters, result, data);
           }
@@ -76,7 +79,7 @@ public class FilterLoader {
     }
   }
 
-  private static void parseSteps(Map<String, Filter> filters, String data, String path, Map<String, String> params) {
+  private static void parseSteps(Map<String, Filter> filters, String data, String path, Map<String, String> params, String sampleId) {
     String pattern = "([a-zA-Z0-9]*)\\t([^\\t]*)\\t*((\\b(simple)\\b|\\b(complex)\\b|\\b(file)\\b)*)";
     Pattern r = Pattern.compile(pattern);
     Matcher m = r.matcher(data);
@@ -86,7 +89,7 @@ public class FilterLoader {
       key = m.group(1);
       filterString = m.group(2);
       FilterType type = toType(m.group(3));
-      Filter filter = parseFilterString(filterString, type, filters, path, params);
+      Filter filter = parseFilterString(filterString, type, filters, path, params, sampleId);
       filters.put(key, filter);
     } else {
       throw new IllegalArgumentException(
@@ -103,7 +106,7 @@ public class FilterLoader {
   }
 
   private static Filter parseFilterString(String filterString, FilterType type,
-      Map<String, Filter> currentFilters, String path, Map<String,String> params) {
+      Map<String, Filter> currentFilters, String path, Map<String,String> params, String sampleId) {
     for(Entry<String,String> entry:params.entrySet()) {
       String key = PARAM_PREFIX +entry.getKey()+ PARAM_POSTFIX;
       filterString = filterString.replace(key,entry.getValue());
@@ -113,7 +116,11 @@ public class FilterLoader {
     String operator = values[1];
     if (type == FilterType.SIMPLE) {
       String value = values[2];
-      return new SimpleFilter(field, getOperator(operator), value);
+      if(filterString.startsWith(SAMPLE+BRACET)) {
+        return new SampleFilter(field, getOperator(operator), value, sampleId);
+      }else{
+        return new SimpleFilter(field, getOperator(operator), value);
+      }
     } else if (type == FilterType.COMPLEX) {
       //referenced filters in complex filter should always be mentioned earlier in the file than the complex filter itself
       //complex filters contain a list of filters and the operator between them
