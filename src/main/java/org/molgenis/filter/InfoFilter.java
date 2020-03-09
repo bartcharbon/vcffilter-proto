@@ -10,7 +10,6 @@ import static org.molgenis.vcf.utils.VcfConstants.INFO;
 import static org.molgenis.vcf.utils.VcfConstants.POS;
 import static org.molgenis.vcf.utils.VcfConstants.QUAL;
 import static org.molgenis.vcf.utils.VcfConstants.REF;
-import static org.molgenis.vcf.utils.VcfConstants.SAMPLE;
 import static org.molgenis.vcf.utils.VcfUtils.getInfoFieldValue;
 import static org.molgenis.vcf.utils.VcfUtils.updateInfoField;
 import static org.molgenis.vcf.utils.VepUtils.VEP_INFO_NAME;
@@ -20,23 +19,16 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import joptsimple.internal.Strings;
-import org.apache.commons.lang3.ArrayUtils;
 import org.molgenis.vcf.VcfRecord;
-import org.molgenis.vcf.VcfSample;
 import org.molgenis.vcf.utils.VepUtils;
 
-public class SimpleFilter implements Filter {
-
-  private static final String VEP = "VEP";
-  static final String BRACET = "(";
+public class InfoFilter implements Filter {
   private final String field;
   private final SimpleOperator operator;
   private final String filterValue;
 
-  public SimpleFilter(String field, SimpleOperator operator, String value) {
+  public InfoFilter(String field, SimpleOperator operator, String value) {
     this.field = requireNonNull(field);
     this.operator = requireNonNull(operator);
     this.filterValue = requireNonNull(value);
@@ -60,7 +52,7 @@ public class SimpleFilter implements Filter {
         return new FilterResult(false, vcfRecord);
       } else {
         throw new IllegalStateException();
-      }
+    }
   }
 
   private boolean filterCollection(Collection<String> value) {
@@ -111,43 +103,7 @@ public class SimpleFilter implements Filter {
   }
 
   private Object getValue(VcfRecord record, String field) {
-    Object value;
-    switch (field) {
-      case CHROM:
-        value = record.getChromosome();
-        break;
-      case REF:
-        value = record.getReferenceAllele().getAlleleAsString();
-        break;
-      case QUAL:
-        value = record.getQuality();
-        break;
-      case FILTER:
-        value = record.getFilterStatus();
-        break;
-      case ID:
-        value = record.getIdentifiers();
-        break;
-      case POS:
-        //FIXME: should not be toStringed
-        value = Integer.toString(record.getPosition());
-        break;
-      case ALT:
-      case FORMAT:
-        throw new IllegalArgumentException("Field [" + field + "] is currently unsupported");
-      default:
-          throw new IllegalArgumentException("Field [" + field + "] is unsupported");
-    }
-    return value;
-  }
-
-  @Override
-  public String toString() {
-    return "SimpleFilter{" +
-        "field='" + field + '\'' +
-        ", operator=" + operator +
-        ", filterValue='" + filterValue + '\'' +
-        '}';
+    return getInfoFieldValue(record, field);
   }
 
   @Override
@@ -158,14 +114,23 @@ public class SimpleFilter implements Filter {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    SimpleFilter that = (SimpleFilter) o;
-    return field.equals(that.field) &&
+    InfoFilter that = (InfoFilter) o;
+    return Objects.equals(field, that.field) &&
         operator == that.operator &&
-        filterValue.equals(that.filterValue);
+        Objects.equals(filterValue, that.filterValue);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(field, operator, filterValue);
+  }
+
+  @Override
+  public String toString() {
+    return "InfoFilter{" +
+        "field='" + field + '\'' +
+        ", operator=" + operator +
+        ", filterValue='" + filterValue + '\'' +
+        '}';
   }
 }

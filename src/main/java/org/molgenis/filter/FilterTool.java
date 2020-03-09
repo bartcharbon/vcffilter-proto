@@ -1,7 +1,6 @@
 package org.molgenis.filter;
 
 import static java.util.Arrays.asList;
-import static org.molgenis.filter.FilterLoader.loadFilters;
 import static org.molgenis.vcf.utils.VcfUtils.getRecordIdentifierString;
 import static org.molgenis.vcf.utils.VcfUtils.getVcfReader;
 import static org.molgenis.vcf.utils.VcfUtils.getVcfWriter;
@@ -21,6 +20,7 @@ import java.util.stream.StreamSupport;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import org.apache.commons.io.output.NullWriter;
+import org.molgenis.filter.yaml.YamlLoader;
 import org.molgenis.vcf.VcfReader;
 import org.molgenis.vcf.VcfRecord;
 import org.molgenis.vcf.VcfWriter;
@@ -40,6 +40,7 @@ public class FilterTool {
   private static final String FILTER_FILE_POSTFIX = ".filter";
   private static final String ROUTE_FILE_POSTFIX = ".route";
   private static final String TSV = ".tsv";
+  private static final String YML = ".yml";
   private static final String GZIP_EXTENSION = ".gz";
   private static boolean isLogRoute;
 
@@ -96,7 +97,7 @@ public class FilterTool {
     String extension = fullInputFileName.substring(fullInputFileName.indexOf("."));
     String inputFileName = fullInputFileName.replace(extension,"");
     File outputFile = createOutputFile(inputFileName, outputDir, OUTPUT_FILE_POSTFIX + extension, isReplace);
-    File archivedFilterFile = createOutputFile(inputFileName, outputDir, FILTER_FILE_POSTFIX+TSV, isReplace);
+    File archivedFilterFile = createOutputFile(inputFileName, outputDir, FILTER_FILE_POSTFIX+YML, isReplace);
     File routesFile = createOutputFile(inputFileName, outputDir, ROUTE_FILE_POSTFIX+TSV, isReplace);
 
     if (options.has(ROUTE)) {
@@ -116,7 +117,7 @@ public class FilterTool {
     }
 
     try {
-      Map<String, FilterStep> filters = loadFilters(filterFile, params, sampleId);
+      Map<String, FilterStep> filters = YamlLoader.loadFilters(filterFile, params, sampleId);
 
       try (FileOutputStream copyStream = new FileOutputStream(archivedFilterFile)) {
         Files.copy(filterFile.toPath(), copyStream);
@@ -143,8 +144,7 @@ public class FilterTool {
             } catch (IOException e) {
               throw new RuntimeException(e);
             }
-          }).filter(FilterResult::getPass)
-          .map(FilterResult::getRecord);
+          }).filter(filterResult -> filterResult != null).map(FilterResult::getRecord);
       filtered.forEach(record -> writeRecord(record, vcfWriter));
       vcfWriter.close();
       routesWriter.close();
@@ -211,8 +211,10 @@ public class FilterTool {
     processLabels(record, filterResult, action);
     if (action.getState() == FilterState.KEEP) {
       appendToRoute(route, " > KEEP" + "\n");
+      return filterResult;
     } else if (action.getState() == FilterState.REMOVE) {
       appendToRoute(route, " > REMOVE" + "\n");
+      return null;
     } else {
       String nextFilter = action.getNextStep();
       FilterStep nextFilterStep = filters.get(nextFilter);
@@ -221,7 +223,6 @@ public class FilterTool {
       }
       return processFilterAction(filters, nextFilterStep, filterResult.getRecord(), route);
     }
-    return filterResult;
   }
 
   private static void appendToRoute(StringBuilder route, String s) {

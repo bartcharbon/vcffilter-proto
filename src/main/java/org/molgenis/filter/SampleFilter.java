@@ -1,7 +1,6 @@
 package org.molgenis.filter;
 
 import static java.util.Objects.requireNonNull;
-import static org.molgenis.vcf.utils.VcfConstants.SAMPLE;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -9,8 +8,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import joptsimple.internal.Strings;
 import org.apache.commons.lang3.ArrayUtils;
 import org.molgenis.vcf.VcfRecord;
@@ -33,23 +30,23 @@ public class SampleFilter implements Filter {
 
   @Override
   public FilterResult filter(VcfRecord vcfRecord) {
-      Object value = getSampleValue(vcfRecord, field, sampleId);
-      if (value == null) {
-        return new FilterResult(false, vcfRecord);
+    Object value = getSampleValue(vcfRecord, field, sampleId);
+    if (value == null) {
+      return new FilterResult(false, vcfRecord);
+    }
+    if (value instanceof String) {
+      if (filterSingleValue(value.toString())) {
+        return new FilterResult(true, vcfRecord);
       }
-      if (value instanceof String) {
-        if (filterSingleValue(value.toString())) {
-          return new FilterResult(true, vcfRecord);
-        }
-        return new FilterResult(false, vcfRecord);
-      } else if (value instanceof Collection) {
-        if (filterCollection((Collection<String>) value)) {
-          return new FilterResult(true, vcfRecord);
-        }
-        return new FilterResult(false, vcfRecord);
-      } else {
-        throw new IllegalStateException();
+      return new FilterResult(false, vcfRecord);
+    } else if (value instanceof Collection) {
+      if (filterCollection((Collection<String>) value)) {
+        return new FilterResult(true, vcfRecord);
       }
+      return new FilterResult(false, vcfRecord);
+    } else {
+      throw new IllegalStateException();
+    }
   }
 
   private boolean filterCollection(Collection<String> value) {
@@ -101,31 +98,21 @@ public class SampleFilter implements Filter {
 
   private Object getSampleValue(VcfRecord record, String field, String sampleId) {
     Object value;
-    String pattern = SAMPLE + "\\(([a-zA-Z]*)(\\,(\\d*))*\\)";
-    Pattern r = Pattern.compile(pattern);
-    Matcher m = r.matcher(field);
     Integer sampleIndex;
-    String sampleFieldName;
-    if (m.matches()) {
-      sampleFieldName = m.group(1);
-      sampleIndex = m.group(3) != null ? Integer.valueOf(m.group(3)) : getSampleIndex(record.getVcfMeta(),sampleId);
-      value = getSampleValue(record, sampleFieldName, sampleIndex);
-    } else {
-      throw new IllegalArgumentException(
-          "Sample field is not correctly formatted, valid examples: 'SAMPLE(GT)','SAMPLE(GT,0)'");
-    }
+    sampleIndex = getSampleIndex(record.getVcfMeta(), sampleId);
+    value = getSampleValue(record, field, sampleIndex);
     return value;
   }
 
   private Integer getSampleIndex(VcfMeta vcfMeta, String sampleId) {
-    if(sampleId == null){
+    if (sampleId == null) {
       return null;
     }
-    int i=0;
+    int i = 0;
     Iterator<String> names = vcfMeta.getSampleNames().iterator();
-    while(names.hasNext()){
+    while (names.hasNext()) {
       String name = names.next();
-      if(name.equals(sampleId)){
+      if (name.equals(sampleId)) {
         return i;
       }
       i++;
