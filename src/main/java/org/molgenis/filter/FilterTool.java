@@ -207,7 +207,7 @@ public class FilterTool {
     FilterResult filterResult = filterStep.getFilter().filter(record);
     FilterAction action = filterStep.getAction(filterResult.getPass());
     appendToRoute(route, " > ");
-    appendToRoute(route, filterStep.getKey());
+    appendToRoute(route, filterStep.getKey()+"("+filterResult.getPass()+")");
     processLabels(record, filterResult, action);
     if (action.getState() == FilterState.KEEP) {
       appendToRoute(route, " > KEEP" + "\n");
