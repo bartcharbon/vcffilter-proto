@@ -119,7 +119,7 @@ public class VcfUtils {
         return info.getValRaw();
       }
     }
-    throw new RuntimeException("No "+key+" info field found in vcf");
+    return null;
   }
 
   private static VcfRecord addOrUpdateInfoField(VcfRecord vcfRecord, String key, String value, String description, String number,

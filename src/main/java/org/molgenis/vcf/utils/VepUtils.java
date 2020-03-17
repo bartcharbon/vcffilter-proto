@@ -57,6 +57,9 @@ public class VepUtils {
 
   public static String[] getVepValues(VcfRecord record) {
     VcfInfo vepInfoField = getVepInfoField(record);
+    if(vepInfoField == null){
+      return new String[0];
+    }
     String multiVepResult = vepInfoField.getValRaw();
     return multiVepResult.split(",");
   }
@@ -78,7 +81,8 @@ public class VepUtils {
         return info;
       }
     }
-    throw new RuntimeException("No VEP info field found in vcf");
+    System.err.println("No VEP info field found in vcf"+record.getChromosome()+"_"+record.getPosition());
+    return null;
   }
 
   private static int getIndex(String key, VcfMeta meta) {
