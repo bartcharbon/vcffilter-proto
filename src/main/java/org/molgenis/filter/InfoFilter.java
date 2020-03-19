@@ -1,6 +1,12 @@
 package org.molgenis.filter;
 
 import static java.util.Objects.requireNonNull;
+import static org.molgenis.filter.FilterUtils.SEPARATOR;
+import static org.molgenis.filter.FilterUtils.contains;
+import static org.molgenis.filter.FilterUtils.containsAll;
+import static org.molgenis.filter.FilterUtils.containsAny;
+import static org.molgenis.filter.FilterUtils.containsNone;
+import static org.molgenis.filter.FilterUtils.containsWord;
 import static org.molgenis.vcf.utils.VcfConstants.ALT;
 import static org.molgenis.vcf.utils.VcfConstants.CHROM;
 import static org.molgenis.vcf.utils.VcfConstants.FILTER;
@@ -73,7 +79,25 @@ public class InfoFilter implements Filter {
         result = value.equals(filterValue);
         break;
       case CONTAINS:
-        result = value.contains(filterValue);
+        result = contains(value, filterValue);
+        break;
+      case CONTAINS_WORD:
+        result = containsWord(value, filterValue);
+        break;
+      case CONTAINS_ANY:
+        result = containsAny(value.split(SEPARATOR), filterValue.split(SEPARATOR));
+        break;
+      case CONTAINS_ALL:
+        result = containsAll(value.split(SEPARATOR), filterValue.split(SEPARATOR));
+        break;
+      case CONTAINS_NONE:
+        result = containsNone(value.split(SEPARATOR), filterValue.split(SEPARATOR));
+        break;
+      case NOT_CONTAINS:
+        result = !contains(value, filterValue);
+        break;
+      case NOT_CONTAINS_WORD:
+        result = !containsWord(value,filterValue);
         break;
       case GREATER_OR_EQUAL:
         result = Double.valueOf(value) >= Double.valueOf(filterValue);
@@ -92,7 +116,7 @@ public class InfoFilter implements Filter {
         result = !value.equals(filterValue);
         break;
       case IN:
-        List<String> filtervalues = Arrays.asList(filterValue.split(","));
+        List<String> filtervalues = Arrays.asList(filterValue.split(SEPARATOR));
         result = filtervalues.contains(value);
         break;
       default:

@@ -1,18 +1,14 @@
 package org.molgenis.filter;
 
 import static java.util.Objects.requireNonNull;
+import static org.molgenis.vcf.utils.VcfUtils.getSampleValue;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import joptsimple.internal.Strings;
-import org.apache.commons.lang3.ArrayUtils;
 import org.molgenis.vcf.VcfRecord;
-import org.molgenis.vcf.VcfSample;
-import org.molgenis.vcf.meta.VcfMeta;
 
 public class SampleFilter implements Filter {
 
@@ -94,50 +90,6 @@ public class SampleFilter implements Filter {
             "Invalid filter operator, expecting one of [==,>=,<=,>,<,!=]");
     }
     return result;
-  }
-
-  private Object getSampleValue(VcfRecord record, String field, String sampleId) {
-    Object value;
-    Integer sampleIndex;
-    sampleIndex = getSampleIndex(record.getVcfMeta(), sampleId);
-    value = getSampleValue(record, field, sampleIndex);
-    return value;
-  }
-
-  private Integer getSampleIndex(VcfMeta vcfMeta, String sampleId) {
-    if (sampleId == null) {
-      return null;
-    }
-    int i = 0;
-    Iterator<String> names = vcfMeta.getSampleNames().iterator();
-    while (names.hasNext()) {
-      String name = names.next();
-      if (name.equals(sampleId)) {
-        return i;
-      }
-      i++;
-    }
-    return null;
-  }
-
-  private Object getSampleValue(VcfRecord record, String sampleFieldName, Integer index) {
-    String[] format = record.getFormat();
-    int sampleFieldIndex = ArrayUtils.indexOf(format, sampleFieldName);
-    Object value;
-    if (index != null) {
-      VcfSample sample = com.google.common.collect.Iterators
-          .get(record.getSamples().iterator(), index, null);
-      if (sample != null) {
-        value = sample.getData(sampleFieldIndex);
-      } else {
-        throw new IllegalStateException("Specified sample index does not exist.");
-      }
-    } else {
-      value = new ArrayList<String>();
-      record.getSamples()
-          .forEach(sample -> ((List<String>) value).add(sample.getData(sampleFieldIndex)));
-    }
-    return value;
   }
 
   @Override

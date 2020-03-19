@@ -19,6 +19,7 @@ import org.molgenis.filter.FilterAction;
 import org.molgenis.filter.FilterState;
 import org.molgenis.filter.FilterStep;
 import org.molgenis.filter.InfoFilter;
+import org.molgenis.filter.InfoFlagFilter;
 import org.molgenis.filter.Operator;
 import org.molgenis.filter.SampleFilter;
 import org.molgenis.filter.SimpleFilter;
@@ -53,6 +54,11 @@ public class YamlLoader {
         filters.put(simple.getName(), toInfoFilter(simple.getFilter(), inputFile));
       }
     }
+    if(spec.getSteps().getInfoFlag()!=null){
+      for(org.molgenis.filter.yaml.FlagStep flag: spec.getSteps().getInfoFlag()){
+        filters.put(flag.getName(), toInfoFlagFilter(flag.getFilter()));
+      }
+    }
     if(spec.getSteps().getVep()!=null) {
       for (org.molgenis.filter.yaml.SimpleStep simple : spec.getSteps().getVep()) {
         filters.put(simple.getName(), toVepFilter(simple.getFilter(), inputFile));
@@ -72,6 +78,10 @@ public class YamlLoader {
       filterSteps.put(node.getName(), toFilterStep(node));
     }
     return filterSteps;
+  }
+
+  private static Filter toInfoFlagFilter(FlagFilter filter) {
+    return new InfoFlagFilter(filter.getField(), getOperator(filter.getOperator()));
   }
 
   private static Filter toVepFilter(org.molgenis.filter.yaml.SimpleFilter filter, File inputFile) {

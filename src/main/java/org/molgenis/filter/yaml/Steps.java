@@ -6,6 +6,7 @@ public class Steps {
   List<SimpleStep> simple;
   List<SimpleStep> sample;
   List<SimpleStep> info;
+  List<FlagStep> infoFlag;
   List<SimpleStep> vep;
   List<ComplexStep> complex;
 
@@ -31,6 +32,14 @@ public class Steps {
 
   public void setInfo(List<SimpleStep> info) {
     this.info = info;
+  }
+
+  public List<FlagStep> getInfoFlag() {
+    return infoFlag;
+  }
+
+  public void setInfoFlag(List<FlagStep> info) {
+    this.infoFlag = info;
   }
 
   public List<SimpleStep> getVep() {

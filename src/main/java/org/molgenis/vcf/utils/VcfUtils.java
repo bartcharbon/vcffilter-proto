@@ -3,21 +3,32 @@ package org.molgenis.vcf.utils;
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
+import static org.molgenis.vcf.utils.VcfConstants.ALT;
+import static org.molgenis.vcf.utils.VcfConstants.CHROM;
+import static org.molgenis.vcf.utils.VcfConstants.FILTER;
+import static org.molgenis.vcf.utils.VcfConstants.FORMAT;
+import static org.molgenis.vcf.utils.VcfConstants.ID;
+import static org.molgenis.vcf.utils.VcfConstants.POS;
+import static org.molgenis.vcf.utils.VcfConstants.QUAL;
+import static org.molgenis.vcf.utils.VcfConstants.REF;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.StreamSupport;
 import net.sf.samtools.util.BlockCompressedInputStream;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.molgenis.genotype.Allele;
+import org.molgenis.inheritance.pedigree.Pedigree;
 import org.molgenis.vcf.VcfInfo;
 import org.molgenis.vcf.VcfReader;
 import org.molgenis.vcf.VcfRecord;
@@ -203,4 +214,92 @@ public class VcfUtils {
     }
     throw new RuntimeException("Info field not found in vcf");
   }
+
+  public static Object getVcfValue(VcfRecord record, String field) {
+    Object value;
+    switch (field) {
+      case CHROM:
+        value = record.getChromosome();
+        break;
+      case REF:
+        value = record.getReferenceAllele().getAlleleAsString();
+        break;
+      case QUAL:
+        value = record.getQuality();
+        break;
+      case FILTER:
+        value = record.getFilterStatus();
+        break;
+      case ID:
+        value = record.getIdentifiers();
+        break;
+      case POS:
+        //FIXME: should not be toStringed
+        value = Integer.toString(record.getPosition());
+        break;
+      case ALT:
+        value = record.getAlternateAlleles().stream().map(Allele::getAlleleAsString);
+        break;
+      case FORMAT:
+        value = record.getFormat();
+        break;
+      default:
+        throw new IllegalArgumentException("Field [" + field + "] is unsupported");
+    }
+    return value;
+  }
+
+  public static Object getSampleValue(VcfRecord record, String field, String sampleId) {
+    Object value;
+    Integer sampleIndex;
+    sampleIndex = getSampleIndex(record.getVcfMeta(), sampleId);
+    value = getSampleValue(record, field, sampleIndex);
+    return value;
+  }
+
+  private static Integer getSampleIndex(VcfMeta vcfMeta, String sampleId) {
+    if (sampleId == null) {
+      return null;
+    }
+    int i = 0;
+    Iterator<String> names = vcfMeta.getSampleNames().iterator();
+    while (names.hasNext()) {
+      String name = names.next();
+      if (name.equals(sampleId)) {
+        return i;
+      }
+      i++;
+    }
+    return null;
+  }
+
+  private static Object getSampleValue(VcfRecord record, String sampleFieldName, Integer index) {
+    String[] format = record.getFormat();
+    int sampleFieldIndex = ArrayUtils.indexOf(format, sampleFieldName);
+    Object value;
+    if (index != null) {
+      VcfSample sample = com.google.common.collect.Iterators
+          .get(record.getSamples().iterator(), index, null);
+      if (sample != null) {
+        value = sample.getData(sampleFieldIndex);
+      } else {
+        throw new IllegalStateException("Specified sample index does not exist.");
+      }
+    } else {
+      value = new ArrayList<String>();
+      record.getSamples()
+          .forEach(sample -> ((List<String>) value).add(sample.getData(sampleFieldIndex)));
+    }
+    return value;
+  }
+
+  public static boolean hasVariant(String gt, String alleleIdx) {
+    return !gt.contains(alleleIdx);
+  }
+
+  public static boolean deNovo(VcfRecord vcfRecord, Pedigree pedigree, String alleleIdx) {
+      String fatherGt = VcfUtils.getSampleValue(vcfRecord, "GT", pedigree.getFather().get().getPatientId()).toString();
+      String motherGt = VcfUtils.getSampleValue(vcfRecord, "GT", pedigree.getMother().get().getPatientId()).toString();
+      return hasVariant(fatherGt, alleleIdx) && hasVariant(motherGt, alleleIdx);
+    }
 }
