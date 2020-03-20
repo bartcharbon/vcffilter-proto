@@ -41,8 +41,9 @@ public class FilterTool {
   private static final String ROUTE_FILE_POSTFIX = ".route";
   private static final String TSV = ".tsv";
   private static final String YML = ".yml";
-  private static final String GZIP_EXTENSION = ".gz";
-  private static boolean isLogRoute;
+  public static final String GZIP_EXTENSION = ".gz";
+  private static final String FILTER_FILE_HEADER = "Filterfile";
+  private static final String ROUTES_FILE_HEADER = "Routesfile";
 
   public static void main(String[] args) {
     OptionParser parser = createOptionParser();
@@ -100,10 +101,6 @@ public class FilterTool {
     File archivedFilterFile = createOutputFile(inputFileName, outputDir, FILTER_FILE_POSTFIX+YML, isReplace);
     File routesFile = createOutputFile(inputFileName, outputDir, ROUTE_FILE_POSTFIX+TSV, isReplace);
 
-    if (options.has(ROUTE)) {
-      isLogRoute = true;
-    }
-
     Map<String, String> params;
     if(options.hasArgument(PARAMS)){
       params = loadParams(options.valueOf(PARAMS).toString());
@@ -123,32 +120,13 @@ public class FilterTool {
         Files.copy(filterFile.toPath(), copyStream);
       }
 
-      Map<String, String> additionalHeaders = new HashMap();
-      additionalHeaders.put("Filterfile", archivedFilterFile.getName());
-      if(isLogRoute) {
-        additionalHeaders.put("Routesfile", routesFile.getName());
-      }
-      Writer routesWriter = getRoutesWriter(routesFile);
 
-      VcfReader reader = getVcfReader(inputFile, extension.endsWith(GZIP_EXTENSION));
-      VcfWriter vcfWriter = getVcfWriter(outputFile, reader.getVcfMeta(), additionalHeaders, extension.endsWith(
-          GZIP_EXTENSION));
+      String filterFileHeaderName = FILTER_FILE_HEADER;
+      String routesFileHeaderName = ROUTES_FILE_HEADER;
+      String filterLabelsInfoField = FILTER_LABELS;
 
-      Stream<VcfRecord> recordStream = StreamSupport
-          .stream(reader.spliterator(), false);
-
-      Stream<VcfRecord> filtered = recordStream
-          .map(record -> VcfUtils.addInfoField(record, FILTER_LABELS, ".")).map(record -> {
-            try {
-              return startFiltering(record, filters, routesWriter);
-            } catch (IOException e) {
-              throw new RuntimeException(e);
-            }
-          }).filter(filterResult -> filterResult != null).map(FilterResult::getRecord);
-      filtered.forEach(record -> writeRecord(record, vcfWriter));
-      vcfWriter.close();
-      routesWriter.close();
-      System.out.println("Filtered!");
+      FilterRunner filterRunner = new FilterRunner(inputFile, extension, outputFile, archivedFilterFile,filterFileHeaderName, routesFileHeaderName, filterLabelsInfoField, routesFile);
+      filterRunner.runFilters(filters);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -184,59 +162,4 @@ public class FilterTool {
     return outputFile;
   }
 
-  private Writer getRoutesWriter(File routesFile) throws IOException {
-    if(isLogRoute) {
-      return new FileWriter(routesFile);
-    }else{
-      return new NullWriter();
-    }
-  }
-
-  private FilterResult startFiltering(VcfRecord record, Map<String, FilterStep> filters,
-      Writer routesWriter) throws IOException {
-    FilterStep filterStep = StreamSupport.stream(filters.entrySet().spliterator(), false)
-        .findFirst().get().getValue();
-    StringBuilder route = new StringBuilder(getRecordIdentifierString(record));
-    FilterResult result = processFilterAction(filters, filterStep, record, route);
-    routesWriter.write(route.toString());
-    return result;
-  }
-
-  private FilterResult processFilterAction(Map<String, FilterStep> filters,
-      FilterStep filterStep, VcfRecord record, StringBuilder route) {
-    FilterResult filterResult = filterStep.getFilter().filter(record);
-    FilterAction action = filterStep.getAction(filterResult.getPass());
-    appendToRoute(route, " > ");
-    appendToRoute(route, filterStep.getKey()+"("+filterResult.getPass()+")");
-    processLabels(record, filterResult, action);
-    if (action.getState() == FilterState.KEEP) {
-      appendToRoute(route, " > KEEP" + "\n");
-      return filterResult;
-    } else if (action.getState() == FilterState.REMOVE) {
-      appendToRoute(route, " > REMOVE" + "\n");
-      return null;
-    } else {
-      String nextFilter = action.getNextStep();
-      FilterStep nextFilterStep = filters.get(nextFilter);
-      if (nextFilterStep == null) {
-        throw new RuntimeException("Filterstep '" + nextFilter + "' could not be resolved.");
-      }
-      return processFilterAction(filters, nextFilterStep, filterResult.getRecord(), route);
-    }
-  }
-
-  private static void appendToRoute(StringBuilder route, String s) {
-    if (isLogRoute) {
-      route.append(s);
-    }
-  }
-
-  private void processLabels(VcfRecord record, FilterResult filterResult, FilterAction action) {
-    if (action.getLabel() != null) {
-      String currentLabels = VcfUtils.getInfoFieldValue(record, FILTER_LABELS);
-      currentLabels = currentLabels.equals(".") ? "" : currentLabels + ",";
-      String labels = currentLabels + action.getLabel();
-      filterResult.setRecord(VcfUtils.updateInfoField(record, FILTER_LABELS, labels));
-    }
-  }
 }

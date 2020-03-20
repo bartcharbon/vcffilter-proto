@@ -302,4 +302,9 @@ public class VcfUtils {
       String motherGt = VcfUtils.getSampleValue(vcfRecord, "GT", pedigree.getMother().get().getPatientId()).toString();
       return hasVariant(fatherGt, alleleIdx) && hasVariant(motherGt, alleleIdx);
     }
+
+  public static boolean isHmz(VcfRecord vcfRecord, String sampleId, String alleleIdx) {
+    String gt = VcfUtils.getSampleValue(vcfRecord, "GT", sampleId).toString();
+    return gt.equals(alleleIdx+"|"+alleleIdx)||gt.equals(alleleIdx+"/"+alleleIdx);
+  }
 }

@@ -1,17 +1,24 @@
 package org.molgenis.inheritance;
 
+import static org.molgenis.inheritance.pedigree.PedigreeUtils.getSingleParentPedigree;
 import static org.molgenis.vcf.utils.VcfUtils.getRecordIdentifierString;
+import static org.molgenis.vcf.utils.VcfUtils.getSampleValue;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.molgenis.filter.Filter;
 import org.molgenis.filter.FilterResult;
+import org.molgenis.inheritance.pedigree.Affected;
 import org.molgenis.inheritance.pedigree.Pedigree;
 import org.molgenis.vcf.VcfRecord;
+import org.molgenis.vcf.utils.VcfUtils;
 import org.molgenis.vcf.utils.VepUtils;
 
 public class TwiceOneGeneFilter implements Filter {
+
+  private static final String ALLELE_IDX = "1";
   private final Iterable<VcfRecord> records;
   private final Pedigree pedigree;
 
@@ -22,19 +29,52 @@ public class TwiceOneGeneFilter implements Filter {
   @Override
   public FilterResult filter(VcfRecord vcfRecord) {
     Set<String> genes = VepUtils.getVepValues("SYMBOL", vcfRecord);
-    if(genes.size() != 0) {
+    if(genes.size() >= 0) {
       String gene = genes.iterator().next();
       if (genes.size() > 1) {
         System.err.println(
             "More than one gene found for record: " + getRecordIdentifierString(vcfRecord)
                 + "using the first: " + gene);
       }
-      return new FilterResult(StreamSupport.stream(records.spliterator(), false).filter(record -> inGene(gene, record)).collect(
-          Collectors.toList()).size() >= 2, vcfRecord);
+      List<VcfRecord> variantsInGene = StreamSupport.stream(records.spliterator(), false)
+          .filter(record -> inGene(gene, record)).collect(
+              Collectors.toList());
+      if(variantsInGene.size() > 1) {
+        return new FilterResult(parentNotHasVariant(vcfRecord, variantsInGene, pedigree), vcfRecord);
+      }
     }else{
       System.err.println("No gene found for variant: " + getRecordIdentifierString(vcfRecord));
     }
     return new FilterResult(false, vcfRecord);
+  }
+
+  private boolean parentNotHasVariant(VcfRecord vcfRecord, List<VcfRecord> variantsInGene,
+      Pedigree pedigree) {
+    Pedigree parent = getSingleParentPedigree(pedigree);
+    boolean parentHasVariant = VcfUtils.hasVariant(getSampleValue(vcfRecord,"GT",parent.getPatientId()).toString(),
+        ALLELE_IDX);
+    boolean result = true;
+    //parent has variant under test
+    //for variants excluding under test
+    for(VcfRecord record : variantsInGene) {
+      if(!record.equals(vcfRecord)) {
+        boolean parentHasOtherVariant = VcfUtils.hasVariant(getSampleValue(record,"GT",parent.getPatientId()).toString(),
+            ALLELE_IDX);
+        if (parent.getAffected() == Affected.TRUE) {
+          //Parent does not have both of the variants
+          if(!parentHasVariant || !parentHasOtherVariant){
+            return false;
+          }
+        } else {
+          //Parent does not have either one of the variants
+          if(!parentHasVariant && !parentHasOtherVariant){
+            return false;
+          }
+        }
+      }
+    }
+
+    return result;
   }
 
   private boolean inGene(String targetGene, VcfRecord record) {
