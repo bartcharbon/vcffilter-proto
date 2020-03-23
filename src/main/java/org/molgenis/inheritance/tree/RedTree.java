@@ -17,6 +17,7 @@ import static org.molgenis.inheritance.tree.IfTree.IF1;
 import static org.molgenis.inheritance.tree.IfTree.addIfTree;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.molgenis.filter.Filter;
 import org.molgenis.filter.FilterAction;
@@ -44,7 +45,7 @@ public class RedTree {
   private static final String RED_18 = "red18";
   private static final String RED_19 = "red19";
   public static Map<String, FilterStep> getRedTree(Map<String, Filter> filters) {
-    Map<String, FilterStep> result = new HashMap<>();
+    Map<String, FilterStep> result = new LinkedHashMap<>();
     result
         .put(RED_1, new FilterStep(RED_1, filters.get(INHERITANCE_AD_FILTER),
             new FilterAction(FilterState.NEXT, RED_6, null),

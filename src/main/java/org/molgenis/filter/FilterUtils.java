@@ -11,7 +11,7 @@ public class FilterUtils {
     List<String> values = new ArrayList<>();
     String[] splitted = value.split(",");
     for(String split : splitted){
-      String[] doubleSplitted = split.split("|");
+      String[] doubleSplitted = split.split("\\|");
       for(String doubleSplit : doubleSplitted){
         values.add(doubleSplit);
       }

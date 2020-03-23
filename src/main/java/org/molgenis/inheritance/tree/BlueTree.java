@@ -16,6 +16,7 @@ import static org.molgenis.inheritance.tree.IfTree.IF1;
 import static org.molgenis.inheritance.tree.IfTree.addIfTree;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.molgenis.filter.Filter;
 import org.molgenis.filter.FilterAction;
@@ -43,7 +44,7 @@ public class BlueTree {
   private static final String BLUE_18 = "blue18";
   private static final String BLUE_19 = "blue19";
   public static Map<String, FilterStep> getBlueTree(Map<String, Filter> filters) {
-    Map<String, FilterStep> result = new HashMap<>();
+    Map<String, FilterStep> result = new LinkedHashMap<>();
     result
         .put(BLUE_1, new FilterStep(BLUE_1, filters.get(INHERITANCE_AD_FILTER),
             new FilterAction(FilterState.NEXT, BLUE_6, null),

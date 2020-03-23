@@ -14,6 +14,7 @@ import static org.molgenis.inheritance.tree.IfTree.IF1;
 import static org.molgenis.inheritance.tree.IfTree.addIfTree;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import org.molgenis.filter.Filter;
 import org.molgenis.filter.FilterAction;
@@ -32,7 +33,7 @@ public class GreenTree {
   private static final String GREEN9 = "green9";
   private static final String GREEN10 = "green10";
   public static Map<String, FilterStep> getGreenTree(Map<String, Filter> filters) {
-    Map<String, FilterStep> result = new HashMap<>();
+    Map<String, FilterStep> result = new LinkedHashMap<>();
     result
         .put(GREEN1, new FilterStep(GREEN1, filters.get(INHERITANCE_AD_FILTER),
             new FilterAction(FilterState.KEEP, null, null),
