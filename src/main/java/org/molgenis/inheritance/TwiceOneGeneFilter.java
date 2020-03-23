@@ -29,15 +29,16 @@ public class TwiceOneGeneFilter implements Filter {
   @Override
   public FilterResult filter(VcfRecord vcfRecord) {
     Set<String> genes = VepUtils.getVepValues("SYMBOL", vcfRecord);
-    if(genes.size() >= 0) {
-      String gene = genes.iterator().next();
-      if (genes.size() > 1) {
+    List<String> filteredGenes = genes.stream().filter(gene -> !gene.isEmpty()).distinct()
+        .collect(Collectors.toList());
+    if (!filteredGenes.isEmpty()) {
+      if (filteredGenes.size() > 1) {
         System.err.println(
             "More than one gene found for record: " + getRecordIdentifierString(vcfRecord)
-                + "using the first: " + gene);
+                + "using the first: " + filteredGenes.get(0));
       }
       List<VcfRecord> variantsInGene = StreamSupport.stream(records.spliterator(), false)
-          .filter(record -> inGene(gene, record)).collect(
+          .filter(record -> inGene(filteredGenes.get(0), record)).collect(
               Collectors.toList());
       if(variantsInGene.size() > 1) {
         return new FilterResult(parentNotHasVariant(vcfRecord, variantsInGene, pedigree), vcfRecord);

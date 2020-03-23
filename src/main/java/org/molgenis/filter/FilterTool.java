@@ -1,30 +1,16 @@
 package org.molgenis.filter;
 
 import static java.util.Arrays.asList;
-import static org.molgenis.vcf.utils.VcfUtils.getRecordIdentifierString;
-import static org.molgenis.vcf.utils.VcfUtils.getVcfReader;
-import static org.molgenis.vcf.utils.VcfUtils.getVcfWriter;
-import static org.molgenis.vcf.utils.VcfUtils.writeRecord;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
-import org.apache.commons.io.output.NullWriter;
 import org.molgenis.filter.yaml.YamlLoader;
-import org.molgenis.vcf.VcfReader;
-import org.molgenis.vcf.VcfRecord;
-import org.molgenis.vcf.VcfWriter;
-import org.molgenis.vcf.utils.VcfUtils;
 
 public class FilterTool {
 
@@ -119,7 +105,6 @@ public class FilterTool {
       try (FileOutputStream copyStream = new FileOutputStream(archivedFilterFile)) {
         Files.copy(filterFile.toPath(), copyStream);
       }
-
 
       String filterFileHeaderName = FILTER_FILE_HEADER;
       String routesFileHeaderName = ROUTES_FILE_HEADER;

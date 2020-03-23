@@ -14,7 +14,6 @@ public class VepUtils {
   public static final String VEP_SEPERATOR = "\\|";
   public static final String VEP_INFO_NAME = "CSQ";
   public static String 	ALLELE	=	 "Allele";
-  public static String 	IMPACT	=	 "IMPACT";
   public static String 	GENE	=	 "Gene";
 
 

@@ -1,5 +1,6 @@
 package org.molgenis.filter;
 
+import static java.util.Objects.requireNonNull;
 import static org.molgenis.filter.FilterTool.GZIP_EXTENSION;
 import static org.molgenis.vcf.utils.VcfUtils.getRecordIdentifierString;
 import static org.molgenis.vcf.utils.VcfUtils.getVcfReader;
@@ -34,9 +35,9 @@ public class FilterRunner {
   public FilterRunner(File inputFile, String extension, File outputFile,
       File archivedFilterFile, String filterFileHeaderName,
       String routesFileHeaderName, String filterLabelsInfoField, File routesFile) {
-    this.inputFile = inputFile;
-    this.extension = extension;
-    this.outputFile = outputFile;
+    this.inputFile = requireNonNull(inputFile);
+    this.extension = requireNonNull(extension);
+    this.outputFile = requireNonNull(outputFile);
     this.archivedFilterFile = archivedFilterFile;
     this.filterFileHeaderName = filterFileHeaderName;
     this.routesFileHeaderName = routesFileHeaderName;
@@ -47,7 +48,9 @@ public class FilterRunner {
 
   public void runFilters(Map<String, FilterStep> filters) throws Exception {
     Map<String, String> additionalHeaders = new HashMap();
-    additionalHeaders.put(filterFileHeaderName, archivedFilterFile.getName());
+    if(filterFileHeaderName != null && archivedFilterFile != null) {
+      additionalHeaders.put(filterFileHeaderName, archivedFilterFile.getName());
+    }
     if(isLogRoute) {
       additionalHeaders.put(routesFileHeaderName, routesFile.getName());
     }

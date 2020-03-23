@@ -14,8 +14,8 @@ public class Pedigree {
   private Sex sex;
   private Affected affected;
 
-  public Pedigree(String family, String patientId, Pedigree motherId,
-      Pedigree fatherId, Sex sex, Affected affected) {
+  public Pedigree(String family, String patientId, Pedigree fatherId, Pedigree motherId,
+       Sex sex, Affected affected) {
     this.family = requireNonNull(family);
     this.patientId = requireNonNull(patientId);
     this.motherId = motherId;
