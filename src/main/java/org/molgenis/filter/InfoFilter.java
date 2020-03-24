@@ -7,27 +7,14 @@ import static org.molgenis.filter.FilterUtils.containsAll;
 import static org.molgenis.filter.FilterUtils.containsAny;
 import static org.molgenis.filter.FilterUtils.containsNone;
 import static org.molgenis.filter.FilterUtils.containsWord;
-import static org.molgenis.vcf.utils.VcfConstants.ALT;
-import static org.molgenis.vcf.utils.VcfConstants.CHROM;
-import static org.molgenis.vcf.utils.VcfConstants.FILTER;
-import static org.molgenis.vcf.utils.VcfConstants.FORMAT;
-import static org.molgenis.vcf.utils.VcfConstants.ID;
-import static org.molgenis.vcf.utils.VcfConstants.INFO;
-import static org.molgenis.vcf.utils.VcfConstants.POS;
-import static org.molgenis.vcf.utils.VcfConstants.QUAL;
-import static org.molgenis.vcf.utils.VcfConstants.REF;
 import static org.molgenis.vcf.utils.VcfUtils.getInfoFieldValue;
-import static org.molgenis.vcf.utils.VcfUtils.updateInfoField;
-import static org.molgenis.vcf.utils.VepUtils.VEP_INFO_NAME;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import joptsimple.internal.Strings;
 import org.molgenis.vcf.VcfRecord;
-import org.molgenis.vcf.utils.VepUtils;
 
 public class InfoFilter implements Filter {
   private final String field;

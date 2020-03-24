@@ -5,7 +5,6 @@ import static org.molgenis.vcf.utils.VcfUtils.getRecordIdentifierString;
 import static org.molgenis.vcf.utils.VcfUtils.getSampleValue;
 import static org.molgenis.vcf.utils.VcfUtils.hasVariant;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -14,7 +13,6 @@ import org.molgenis.filter.Filter;
 import org.molgenis.filter.FilterResult;
 import org.molgenis.inheritance.pedigree.Pedigree;
 import org.molgenis.vcf.VcfRecord;
-import org.molgenis.vcf.utils.VcfUtils;
 import org.molgenis.vcf.utils.VepUtils;
 
 public class CompoundFilter implements Filter {
@@ -44,9 +42,9 @@ public class CompoundFilter implements Filter {
               Collectors.toList());
 
       //any variant in gene deNovo
-      boolean deNovo = StreamSupport.stream(records.spliterator(), false)
+      boolean deNovo = !StreamSupport.stream(records.spliterator(), false)
           .filter(record -> deNovo(record, pedigree, "1")).collect(
-              Collectors.toList()).size() > 0;
+              Collectors.toList()).isEmpty();
 
       if (sameGeneRecords.size() > 1) {
         boolean fatherHasVariant = false;

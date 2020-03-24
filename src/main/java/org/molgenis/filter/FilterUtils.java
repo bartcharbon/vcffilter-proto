@@ -12,9 +12,7 @@ public class FilterUtils {
     String[] splitted = value.split(",");
     for(String split : splitted){
       String[] doubleSplitted = split.split("\\|");
-      for(String doubleSplit : doubleSplitted){
-        values.add(doubleSplit);
-      }
+      values = Arrays.asList(doubleSplitted);
     }
     return values.contains(filterValue);
   }

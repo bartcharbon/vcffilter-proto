@@ -51,7 +51,7 @@ public class Pedigreader {
       Map<String, String[]> preprocessed = new HashMap<>();
       while (scanner.hasNextLine()) {
         String line = scanner.nextLine();
-        String[] splitted = line.split("\t");
+        String[] splitted = line.split("\t| ");
 
         if (splitted.length == 6) {
           preprocessed.put(splitted[PATIENT_IDX], splitted);

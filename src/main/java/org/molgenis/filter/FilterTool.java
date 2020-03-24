@@ -46,7 +46,7 @@ public class FilterTool {
     parser.acceptsAll(asList("o", OUTPUT), "Output directory").withRequiredArg().ofType(File.class);
     parser.acceptsAll(asList("r", REPLACE), "Enables output files overwrite");
     parser.acceptsAll(asList("q", ROUTE), "Generate a 'route' file");
-    parser.acceptsAll(asList("p", PARAMS), "Parameters to be replaced in the filter file, formet 'KEY1=VALUE1;KEY2=VALUE2'").withRequiredArg().ofType(String.class);;
+    parser.acceptsAll(asList("p", PARAMS), "Parameters to be replaced in the filter file, formet 'KEY1=VALUE1;KEY2=VALUE2'").withRequiredArg().ofType(String.class);
     parser.acceptsAll(asList("s", SAMPLE), "Sample identifier").withRequiredArg().ofType(String.class);
     return parser;
   }
@@ -81,7 +81,7 @@ public class FilterTool {
     boolean isReplace = options.has(REPLACE);
 
     String fullInputFileName = inputFile.getName();
-    String extension = fullInputFileName.substring(fullInputFileName.indexOf("."));
+    String extension = fullInputFileName.substring(fullInputFileName.indexOf('.'));
     String inputFileName = fullInputFileName.replace(extension,"");
     File outputFile = createOutputFile(inputFileName, outputDir, OUTPUT_FILE_POSTFIX + extension, isReplace);
     File archivedFilterFile = createOutputFile(inputFileName, outputDir, FILTER_FILE_POSTFIX+YML, isReplace);

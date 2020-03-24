@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.apache.commons.io.output.NullWriter;
@@ -70,7 +71,7 @@ public class FilterRunner {
           } catch (IOException e) {
             throw new RuntimeException(e);
           }
-        }).filter(filterResult -> filterResult != null).map(FilterResult::getRecord);
+        }).filter(Objects::nonNull).map(FilterResult::getRecord);
     filtered.forEach(record -> writeRecord(record, vcfWriter));
     vcfWriter.close();
     routesWriter.close();
