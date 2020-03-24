@@ -13,7 +13,6 @@ import static org.molgenis.inheritance.InheritanceFilters.TWICE_IN_A_GENE_FILTER
 import static org.molgenis.inheritance.tree.IfTree.IF1;
 import static org.molgenis.inheritance.tree.IfTree.addIfTree;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.molgenis.filter.Filter;
@@ -22,16 +21,16 @@ import org.molgenis.filter.FilterState;
 import org.molgenis.filter.FilterStep;
 
 public class GreenTree {
-  private static final String GREEN1 = "green1";
-  private static final String GREEN2 = "green2";
-  private static final String GREEN3 = "green3";
-  private static final String GREEN4 = "green4";
-  private static final String GREEN5 = "green5";
-  private static final String GREEN6 = "green6";
-  private static final String GREEN7 = "green7";
-  private static final String GREEN8 = "green8";
-  private static final String GREEN9 = "green9";
-  private static final String GREEN10 = "green10";
+  private static final String GREEN1 = "AD[green1]";
+  private static final String GREEN2 = "AR[green2]";
+  private static final String GREEN3 = "Unknown[green3]";
+  private static final String GREEN4 = "AD/AR[green4]";
+  private static final String GREEN5 = "XL[green5]";
+  private static final String GREEN6 = "Hmz[green6]";
+  private static final String GREEN7 = "Male[green7]";
+  private static final String GREEN8 = "TwiceInGene[green8]";
+  private static final String GREEN9 = "FatherAffected[green9]";
+  private static final String GREEN10 = "FatherHasVariant[green10]";
   public static Map<String, FilterStep> getGreenTree(Map<String, Filter> filters) {
     Map<String, FilterStep> result = new LinkedHashMap<>();
     result

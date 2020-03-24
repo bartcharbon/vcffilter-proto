@@ -15,7 +15,6 @@ import static org.molgenis.inheritance.InheritanceFilters.PATIENT_IS_MALE;
 import static org.molgenis.inheritance.tree.IfTree.IF1;
 import static org.molgenis.inheritance.tree.IfTree.addIfTree;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.molgenis.filter.Filter;
@@ -24,25 +23,25 @@ import org.molgenis.filter.FilterState;
 import org.molgenis.filter.FilterStep;
 
 public class BlueTree {
-  private static final String BLUE_1 = "blue1";
-  private static final String BLUE_2 = "blue2";
-  private static final String BLUE_3 = "blue3";
-  private static final String BLUE_4 = "blue4";
-  private static final String BLUE_5 = "blue5";
-  private static final String BLUE_6 = "blue6";
-  private static final String BLUE_7 = "blue7";
-  private static final String BLUE_8 = "blue8";
-  private static final String BLUE_9 = "blue9";
-  private static final String BLUE_10 = "blue10";
-  private static final String BLUE_11 = "blue11";
-  private static final String BLUE_12 = "blue12";
-  private static final String BLUE_13 = "blue13";
-  private static final String BLUE_14 = "blue14";
-  private static final String BLUE_15 = "blue15";
-  private static final String BLUE_16 = "blue16";
-  private static final String BLUE_17 = "blue17";
-  private static final String BLUE_18 = "blue18";
-  private static final String BLUE_19 = "blue19";
+  private static final String BLUE_1 = "AD[blue1]";
+  private static final String BLUE_2 = "AR[blue2]";
+  private static final String BLUE_3 = "Unknown[blue3]";
+  private static final String BLUE_4 = "XL[blue4]";
+  private static final String BLUE_5 = "AD/AR[blue5]";
+  private static final String BLUE_6 = "DeNovo[blue6]";
+  private static final String BLUE_7 = "DeNovo[blue7]";
+  private static final String BLUE_8 = "Male[blue8]";
+  private static final String BLUE_9 = "DeNovo[blue9]";
+  private static final String BLUE_10 = "DeNovo[blue10]";
+  private static final String BLUE_11 = "NonPenetrance[blue11]";
+  private static final String BLUE_12 = "Hmz[blue12]";
+  private static final String BLUE_13 = "FatherHasVariant[blue13]";
+  private static final String BLUE_14 = "NonPenetrance[blue14]";
+  private static final String BLUE_15 = "ParentHmz[blue15]";
+  private static final String BLUE_16 = "Hmz[blue16]";
+  private static final String BLUE_17 = "ParentHmz[blue17]";
+  private static final String BLUE_18 = "Compound[blue18]";
+  private static final String BLUE_19 = "Compound[blue19]";
   public static Map<String, FilterStep> getBlueTree(Map<String, Filter> filters) {
     Map<String, FilterStep> result = new LinkedHashMap<>();
     result

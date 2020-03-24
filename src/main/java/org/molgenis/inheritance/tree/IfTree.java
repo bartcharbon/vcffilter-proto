@@ -11,9 +11,9 @@ import org.molgenis.filter.FilterState;
 import org.molgenis.filter.FilterStep;
 
 public class IfTree {
-  public static final String IF1 = "if1";
-  public static final String IF2 = "if2";
-  public static final String IF3 = "if3";
+  public static final String IF1 = "Truncating[if1]";
+  public static final String IF2 = "MVL[if2]";
+  public static final String IF3 = "splice[if3]";
 
   static void addIfTree(Map<String, Filter> filters, Map<String, FilterStep> result) {
     result.put(IF1, new FilterStep(IF1, filters.get(TRUNCATING),

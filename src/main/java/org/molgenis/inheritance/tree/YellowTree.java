@@ -23,21 +23,21 @@ import org.molgenis.filter.FilterState;
 import org.molgenis.filter.FilterStep;
 
 public class YellowTree {
-  private static final String YELLOW1 = "yellow1";
-  private static final String YELLOW2 = "yellow2";
-  private static final String YELLOW3 = "yellow3";
-  private static final String YELLOW4 = "yellow4";
-  private static final String YELLOW5 = "yellow5";
-  private static final String YELLOW6 = "yellow6";
-  private static final String YELLOW7 = "yellow7";
-  private static final String YELLOW8 = "yellow8";
-  private static final String YELLOW9 = "yellow9";
-  private static final String YELLOW10 = "yellow10";
-  private static final String YELLOW11 = "yellow11";
-  private static final String YELLOW13 = "yellow13";
-  private static final String YELLOW14 = "yellow14";
-  private static final String YELLOW15 = "yellow15";
-  private static final String YELLOW16 = "yellow16";
+  private static final String YELLOW1 = "AD[yellow1]";
+  private static final String YELLOW2 = "AR[yellow2]";
+  private static final String YELLOW3 = "Unknown[yellow3]";
+  private static final String YELLOW4 = "XL[yellow4]";
+  private static final String YELLOW5 = "AD/AR[yellow5]";
+  private static final String YELLOW6 = "NonPenetrance[yellow6]";
+  private static final String YELLOW7 = "Hmz[yellow7]";
+  private static final String YELLOW8 = "FatherNotAffected[yellow8]";
+  private static final String YELLOW9 = "NonPenetrance[yellow9]";
+  private static final String YELLOW10 = "DeNovo[yellow10]";
+  private static final String YELLOW11 = "TwiceInGene[yellow11]";
+  private static final String YELLOW13 = "FatherHasVariant[yellow13]";
+  private static final String YELLOW14 = "DeNovo[yellow14]";
+  private static final String YELLOW15 = "Hmz[yellow15]";
+  private static final String YELLOW16 = "TwiceInGene[yellow16]";
   public static Map<String, FilterStep> getYellowTree(Map<String, Filter> filters) {
     Map<String, FilterStep> result = new LinkedHashMap<>();
     result

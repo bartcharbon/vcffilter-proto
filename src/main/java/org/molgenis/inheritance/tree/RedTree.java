@@ -25,25 +25,25 @@ import org.molgenis.filter.FilterState;
 import org.molgenis.filter.FilterStep;
 
 public class RedTree {
-  private static final String RED_1 = "red1";
-  private static final String RED_2 = "red2";
-  private static final String RED_3 = "red3";
-  private static final String RED_4 = "red4";
-  private static final String RED_5 = "red5";
-  private static final String RED_6 = "red6";
-  private static final String RED_7 = "red7";
-  private static final String RED_8 = "red8";
-  private static final String RED_9 = "red9";
-  private static final String RED_10 = "red10";
-  private static final String RED_11 = "red11";
-  private static final String RED_12 = "red12";
-  private static final String RED_13 = "red13";
-  private static final String RED_14 = "red14";
-  private static final String RED_15 = "red15";
-  private static final String RED_16 = "red16";
-  private static final String RED_17 = "red17";
-  private static final String RED_18 = "red18";
-  private static final String RED_19 = "red19";
+  private static final String RED_1 = "AD[red1]";
+  private static final String RED_2 = "AR[red2]";
+  private static final String RED_3 = "Unknown[red3]";
+  private static final String RED_4 = "XL[red4]";
+  private static final String RED_5 = "AD/AR[red5]";
+  private static final String RED_6 = "DeNovo[red6]";
+  private static final String RED_7 = "Hmz[red7]";
+  private static final String RED_8 = "UnaffectedParentHmz[red8]";
+  private static final String RED_9 = "FatherAffected[red9]";
+  private static final String RED_10 = "DeNovo[red10]";
+  private static final String RED_11 = "NonPenetrance[red11]";
+  private static final String RED_12 = "Compound[red12]";
+  private static final String RED_13 = "FatherHasVariant[red13]";
+  private static final String RED_14 = "NonPenetrance[red14]";
+  private static final String RED_15 = "AffectedParentHasVar[red15]";
+  private static final String RED_16 = "AffectedParentHasVar[red16]";
+  private static final String RED_17 = "Hmz[red17]";
+  private static final String RED_18 = "UnaffectedParentHmz[red18]";
+  private static final String RED_19 = "Compound[red19]";
   public static Map<String, FilterStep> getRedTree(Map<String, Filter> filters) {
     Map<String, FilterStep> result = new LinkedHashMap<>();
     result
