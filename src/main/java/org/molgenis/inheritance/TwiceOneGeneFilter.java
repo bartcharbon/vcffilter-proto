@@ -51,30 +51,33 @@ public class TwiceOneGeneFilter implements Filter {
 
   private boolean parentNotHasVariant(VcfRecord vcfRecord, List<VcfRecord> variantsInGene,
       Pedigree pedigree) {
-    Pedigree parent = getSingleParentPedigree(pedigree);
-    boolean parentHasVariant = VcfUtils.hasVariant(getSampleValue(vcfRecord,"GT",parent.getPatientId()).toString(),
-        ALLELE_IDX);
     boolean result = true;
-    //parent has variant under test
-    //for variants excluding under test
-    for(VcfRecord record : variantsInGene) {
-      if(!record.equals(vcfRecord)) {
-        boolean parentHasOtherVariant = VcfUtils.hasVariant(getSampleValue(record,"GT",parent.getPatientId()).toString(),
-            ALLELE_IDX);
-        if (parent.getAffected() == Affected.TRUE) {
-          //Parent does not have both of the variants
-          if(!parentHasVariant || !parentHasOtherVariant){
-            return false;
-          }
-        } else {
-          //Parent does not have either one of the variants
-          if(!parentHasVariant && !parentHasOtherVariant){
-            return false;
+    if(pedigree.getFather().isPresent() || pedigree.getMother().isPresent()) {
+      Pedigree parent = getSingleParentPedigree(pedigree);
+      boolean parentHasVariant = VcfUtils
+          .hasVariant(getSampleValue(vcfRecord, "GT", parent.getPatientId()).toString(),
+              ALLELE_IDX);
+      //parent has variant under test
+      //for variants excluding under test
+      for (VcfRecord record : variantsInGene) {
+        if (!record.equals(vcfRecord)) {
+          boolean parentHasOtherVariant = VcfUtils
+              .hasVariant(getSampleValue(record, "GT", parent.getPatientId()).toString(),
+                  ALLELE_IDX);
+          if (parent.getAffected() == Affected.TRUE) {
+            //Parent does not have both of the variants
+            if (!parentHasVariant || !parentHasOtherVariant) {
+              return false;
+            }
+          } else {
+            //Parent does not have either one of the variants
+            if (!parentHasVariant && !parentHasOtherVariant) {
+              return false;
+            }
           }
         }
       }
     }
-
     return result;
   }
 

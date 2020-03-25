@@ -17,16 +17,21 @@ public class CustomFilter implements Filter {
 
   private final String fields;
   private File file;
+  private String value;
 
-  public CustomFilter(String field, File file) {
-    this.fields = requireNonNull(field);
+  public CustomFilter(String fields, File file, String value) {
+    this.fields = requireNonNull(fields);
     this.file = requireNonNull(file);
+    this.value = value;
   }
 
   @Override
   public FilterResult filter(VcfRecord vcfRecord) {
     Map<String, String> values = parseFields(vcfRecord);
     StringBuilder valueString = new StringBuilder();
+    if(value != null){
+      valueString.append("VALUE_ARG").append(":").append(value);
+    }
     boolean isEmpty = true;
     for (Entry entry : values.entrySet()) {
       if (!isEmpty) {

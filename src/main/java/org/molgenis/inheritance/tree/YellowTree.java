@@ -14,7 +14,6 @@ import static org.molgenis.inheritance.InheritanceFilters.TWICE_IN_A_GENE_FILTER
 import static org.molgenis.inheritance.tree.IfTree.IF1;
 import static org.molgenis.inheritance.tree.IfTree.addIfTree;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.molgenis.filter.Filter;

@@ -14,12 +14,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.molgenis.filter.ComplexFilter;
 import org.molgenis.filter.ComplexOperator;
+import org.molgenis.filter.CustomFilter;
 import org.molgenis.filter.Filter;
 import org.molgenis.filter.FilterAction;
 import org.molgenis.filter.FilterState;
 import org.molgenis.filter.FilterStep;
 import org.molgenis.filter.InfoFilter;
 import org.molgenis.filter.InfoFlagFilter;
+import org.molgenis.filter.NoOpFilter;
 import org.molgenis.filter.Operator;
 import org.molgenis.filter.SampleFilter;
 import org.molgenis.filter.SimpleFilter;
@@ -31,6 +33,7 @@ import org.yaml.snakeyaml.constructor.Constructor;
 public class YamlLoader {
   private static final String PARAM_PREFIX = "{{";
   private static final String PARAM_POSTFIX = "}}";
+  private static final String NO_OP = "No-Op";
   private static Map<String, Filter> filters = new LinkedHashMap<>();
   private static Map<String, FilterStep> filterSteps = new LinkedHashMap<>();
 
@@ -38,46 +41,62 @@ public class YamlLoader {
 
   }
 
-  public static Map<String, FilterStep> loadFilters(File inputFile, Map<String,String> params, String sampleId){
+  public static Map<String, FilterStep> loadFilterTree(File inputFile, Map<String,String> params, String sampleId){
     InputStream inputstream = preprocessFile(inputFile, params);
     Yaml yaml = new Yaml(new Constructor(FilterSpec
         .class));
     InputStream inputStream = inputstream;
     FilterSpec spec = yaml.load(inputStream);
+
+    createFilters(inputFile, sampleId, spec);
+    createTree(spec);
+
+    return filterSteps;
+  }
+
+  private static void createFilters(File inputFile, String sampleId, FilterSpec spec) {
     if(spec.getSteps().getSimple()!=null) {
-      for (org.molgenis.filter.yaml.SimpleStep simple : spec.getSteps().getSimple()) {
+      for (SimpleStep simple : spec.getSteps().getSimple()) {
         filters.put(simple.getName(), toFilter(simple.getFilter(), inputFile));
       }
     }
+    if(spec.getSteps().getCustom()!=null) {
+      for (SimpleStep simple : spec.getSteps().getSimple()) {
+        filters.put(simple.getName(), toCustomFilter(simple.getFilter(), inputFile));
+      }
+    }
     if(spec.getSteps().getInfo()!=null){
-      for(org.molgenis.filter.yaml.SimpleStep simple: spec.getSteps().getInfo()){
+      for(SimpleStep simple: spec.getSteps().getInfo()){
         filters.put(simple.getName(), toInfoFilter(simple.getFilter(), inputFile));
       }
     }
     if(spec.getSteps().getInfoFlag()!=null){
-      for(org.molgenis.filter.yaml.FlagStep flag: spec.getSteps().getInfoFlag()){
+      for(FlagStep flag: spec.getSteps().getInfoFlag()){
         filters.put(flag.getName(), toInfoFlagFilter(flag.getFilter()));
       }
     }
     if(spec.getSteps().getVep()!=null) {
-      for (org.molgenis.filter.yaml.SimpleStep simple : spec.getSteps().getVep()) {
+      for (SimpleStep simple : spec.getSteps().getVep()) {
         filters.put(simple.getName(), toVepFilter(simple.getFilter(), inputFile));
       }
     }
     if(spec.getSteps().getSample()!=null) {
-      for (org.molgenis.filter.yaml.SimpleStep sample : spec.getSteps().getSample()) {
+      for (SimpleStep sample : spec.getSteps().getSample()) {
         filters.put(sample.getName(), toFilter(sample.getFilter(), sampleId, inputFile));
       }
     }
     if(spec.getSteps().getComplex()!=null) {
-      for (org.molgenis.filter.yaml.ComplexStep complex : spec.getSteps().getComplex()) {
+      for (ComplexStep complex : spec.getSteps().getComplex()) {
         filters.put(complex.getName(), toFilter(complex.getFilter()));
       }
     }
-    for(org.molgenis.filter.yaml.Node node: spec.getTree().getNodes()){
+    filters.put(NO_OP, new NoOpFilter());
+  }
+
+  private static void createTree(FilterSpec spec) {
+    for(Node node: spec.getTree().getNodes()){
       filterSteps.put(node.getName(), toFilterStep(node));
     }
-    return filterSteps;
   }
 
   private static Filter toInfoFlagFilter(FlagFilter filter) {
@@ -85,22 +104,27 @@ public class YamlLoader {
   }
 
   private static Filter toVepFilter(org.molgenis.filter.yaml.SimpleFilter filter, File inputFile) {
-    if(filter.getValue() != null){
-      return new VepFilter(filter.getField(),(SimpleOperator) getOperator(filter.getOperator()),filter.getValue());
-    }
-    else{
+    if(filter.getFile() != null){
       String file = preProcessFilePath(filter.getFile(), inputFile);
       return new VepFilter(filter.getField(),(SimpleOperator) getOperator(filter.getOperator()), file, filter.getColumn());
     }
+    else{
+      return new VepFilter(filter.getField(),(SimpleOperator) getOperator(filter.getOperator()),filter.getValue());
+    }
+  }
+
+  private static Filter toCustomFilter(org.molgenis.filter.yaml.SimpleFilter filter, File inputFile) {
+      return new CustomFilter(filter.getField(),inputFile,filter.getValue());
+
   }
 
   private static Filter toInfoFilter(org.molgenis.filter.yaml.SimpleFilter filter, File inputFile) {
-    if(filter.getValue() != null){
-      return new InfoFilter(filter.getField(),(SimpleOperator) getOperator(filter.getOperator()), filter.getValue());
-    }
-    else{
+    if(filter.getFile() != null){
       String file = preProcessFilePath(filter.getFile(), inputFile);
       return new InfoFilter(filter.getField(),(SimpleOperator) getOperator(filter.getOperator()), file);
+    }
+    else{
+      return new InfoFilter(filter.getField(),(SimpleOperator) getOperator(filter.getOperator()), filter.getValue());
     }
   }
 

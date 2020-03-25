@@ -5,6 +5,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import java.util.List;
+import org.molgenis.genotype.Allele;
 import org.molgenis.vcf.VcfRecord;
 
 class CustomFilterTest {
@@ -15,7 +17,7 @@ class CustomFilterTest {
     when(record.getChromosome()).thenReturn("X");
     ClassLoader classLoader = getClass().getClassLoader();
     File file = new File(classLoader.getResource("testPythonFilter.py").getFile());
-    CustomFilter filter = new CustomFilter("#CHROM", file);
+    CustomFilter filter = new CustomFilter("#CHROM", file, null);
     assertTrue(filter.filter(record).isPass);
   }
 }

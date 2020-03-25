@@ -3,12 +3,13 @@ package org.molgenis.filter.yaml;
 import java.util.List;
 
 public class Steps {
-  List<SimpleStep> simple;
-  List<SimpleStep> sample;
-  List<SimpleStep> info;
-  List<FlagStep> infoFlag;
-  List<SimpleStep> vep;
-  List<ComplexStep> complex;
+  private List<SimpleStep> simple;
+  private List<SimpleStep> sample;
+  private List<SimpleStep> info;
+  private List<FlagStep> infoFlag;
+  private List<SimpleStep> vep;
+  private List<ComplexStep> complex;
+  private List<SimpleStep> custom;
 
   public List<SimpleStep> getSimple() {
     return simple;
@@ -16,6 +17,14 @@ public class Steps {
 
   public void setSimple(List<SimpleStep> simple) {
     this.simple = simple;
+  }
+
+  public List<SimpleStep> getCustom() {
+    return custom;
+  }
+
+  public void setCustom(List<SimpleStep> custom) {
+    this.custom = custom;
   }
 
   public List<SimpleStep> getSample() {

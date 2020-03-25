@@ -116,6 +116,12 @@ public class VepFilter implements Filter {
         List<String> filtervalues = Arrays.asList(filterValue.split(","));
         result = filtervalues.contains(value);
         break;
+      case PRESENT:
+        result = !value.isEmpty();
+        break;
+      case NOT_PRESENT:
+        result = value.isEmpty();
+        break;
       default:
         throw new IllegalArgumentException(
             "Invalid filter operator, expecting one of [==,>=,<=,>,<,!=]");

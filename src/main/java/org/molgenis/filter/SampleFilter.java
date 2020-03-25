@@ -31,12 +31,12 @@ public class SampleFilter implements Filter {
       return new FilterResult(false, vcfRecord);
     }
     if (value instanceof String) {
-      if (filterSingleValue(value.toString())) {
+      if (filterSingleValue(value.toString(), vcfRecord)) {
         return new FilterResult(true, vcfRecord);
       }
       return new FilterResult(false, vcfRecord);
     } else if (value instanceof Collection) {
-      if (filterCollection((Collection<String>) value)) {
+      if (filterCollection((Collection<String>) value, vcfRecord)) {
         return new FilterResult(true, vcfRecord);
       }
       return new FilterResult(false, vcfRecord);
@@ -45,17 +45,17 @@ public class SampleFilter implements Filter {
     }
   }
 
-  private boolean filterCollection(Collection<String> value) {
+  private boolean filterCollection(Collection<String> value, VcfRecord vcfRecord) {
     boolean subresult = false;
     for (String subValue : value) {
-      if (!Strings.isNullOrEmpty(subValue) && filterSingleValue(subValue)) {
+      if (!Strings.isNullOrEmpty(subValue) && filterSingleValue(subValue, vcfRecord)) {
         subresult = true;
       }
     }
     return subresult;
   }
 
-  private boolean filterSingleValue(String value) {
+  private boolean filterSingleValue(String value, VcfRecord vcfRecord) {
     boolean result;
     switch (operator) {
       case EQ:
@@ -84,6 +84,12 @@ public class SampleFilter implements Filter {
       case IN:
         List<String> filtervalues = Arrays.asList(filterValue.split(","));
         result = filtervalues.contains(value);
+        break;
+      case PRESENT:
+        result = vcfRecord.getFormat() != null && Arrays.asList(vcfRecord.getFormat()).contains(field);
+        break;
+      case NOT_PRESENT:
+        result = vcfRecord.getFormat() == null || !Arrays.asList(vcfRecord.getFormat()).contains(field);
         break;
       default:
         throw new IllegalArgumentException(

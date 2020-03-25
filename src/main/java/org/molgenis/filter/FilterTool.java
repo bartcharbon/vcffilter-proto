@@ -100,7 +100,7 @@ public class FilterTool {
     }
 
     try {
-      Map<String, FilterStep> filters = YamlLoader.loadFilters(filterFile, params, sampleId);
+      Map<String, FilterStep> filters = YamlLoader.loadFilterTree(filterFile, params, sampleId);
 
       try (FileOutputStream copyStream = new FileOutputStream(archivedFilterFile)) {
         Files.copy(filterFile.toPath(), copyStream);

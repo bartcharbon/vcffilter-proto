@@ -16,7 +16,6 @@ import static org.molgenis.inheritance.InheritanceFilters.UNAFFECTED_PARENT_HMZ_
 import static org.molgenis.inheritance.tree.IfTree.IF1;
 import static org.molgenis.inheritance.tree.IfTree.addIfTree;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.molgenis.filter.Filter;
