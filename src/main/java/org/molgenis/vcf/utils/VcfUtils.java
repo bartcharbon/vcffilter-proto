@@ -285,10 +285,12 @@ public class VcfUtils {
       } else {
         throw new IllegalStateException("Specified sample index does not exist.");
       }
-    } else {
+    } else if(sampleFieldIndex != -1){
       value = new ArrayList<String>();
       record.getSamples()
           .forEach(sample -> ((List<String>) value).add(sample.getData(sampleFieldIndex)));
+    }else{
+      value = null;
     }
     return value;
   }

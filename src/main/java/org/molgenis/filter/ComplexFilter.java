@@ -18,18 +18,18 @@ public class ComplexFilter implements Filter{
   public FilterResult filter(VcfRecord vcfRecord) {
     if(operator == ComplexOperator.AND){
       for(Filter filter : filters){
-        if(!filter.filter(vcfRecord).getPass()){
-          return new FilterResult(false, vcfRecord);
+        if(filter.filter(vcfRecord).getResult()==FilterResultEnum.FALSE){
+          return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
         }
       }
-      return new FilterResult(true, vcfRecord);
+      return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
     }else{
       for(Filter filter : filters){
-        if(filter.filter(vcfRecord).getPass()){
-          return new FilterResult(true, vcfRecord);
+        if(filter.filter(vcfRecord).getResult() == FilterResultEnum.TRUE){
+          return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
         }
       }
-      return new FilterResult(false, vcfRecord);
+      return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
     }
   }
 }

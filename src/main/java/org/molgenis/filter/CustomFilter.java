@@ -46,7 +46,7 @@ public class CustomFilter implements Filter {
       BufferedReader stdInput = new BufferedReader(new
           InputStreamReader(proc.getInputStream()));
       String result = stdInput.readLine();
-      return new FilterResult("True".equals(result), vcfRecord);
+      return new FilterResult(FilterUtils.toFilterResultEnum("True".equals(result)), vcfRecord);
     } catch (Exception e) {
       throw new RuntimeException(e);
     }

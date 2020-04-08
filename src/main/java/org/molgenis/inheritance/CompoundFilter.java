@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.molgenis.filter.Filter;
 import org.molgenis.filter.FilterResult;
+import org.molgenis.filter.FilterResultEnum;
+import org.molgenis.filter.FilterUtils;
 import org.molgenis.inheritance.pedigree.Pedigree;
 import org.molgenis.vcf.VcfRecord;
 import org.molgenis.vcf.utils.VepUtils;
@@ -63,19 +65,20 @@ public class CompoundFilter implements Filter {
           }
 
           if (fatherHasVariant && motherHasVariant) {
-            return new FilterResult(true, vcfRecord);
+            return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
           } else if (deNovo) {
-            return new FilterResult(fatherHasVariant || motherHasVariant, vcfRecord);
+            return new FilterResult(
+                FilterUtils.toFilterResultEnum(fatherHasVariant || motherHasVariant), vcfRecord);
           } else {
-            return new FilterResult(false, vcfRecord);
+            return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
           }
         }
       }
-      return new FilterResult(false, vcfRecord);
+      return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
     } else {
       System.err.println("No gene found for variant: " + getRecordIdentifierString(vcfRecord));
     }
-    return new FilterResult(false, vcfRecord);
+    return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
   }
 
 

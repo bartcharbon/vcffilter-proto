@@ -28,18 +28,18 @@ public class SampleFilter implements Filter {
   public FilterResult filter(VcfRecord vcfRecord) {
     Object value = getSampleValue(vcfRecord, field, sampleId);
     if (value == null) {
-      return new FilterResult(false, vcfRecord);
+      return new FilterResult(FilterResultEnum.MISSING, vcfRecord);
     }
     if (value instanceof String) {
       if (filterSingleValue(value.toString(), vcfRecord)) {
-        return new FilterResult(true, vcfRecord);
+        return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
       }
-      return new FilterResult(false, vcfRecord);
+      return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
     } else if (value instanceof Collection) {
       if (filterCollection((Collection<String>) value, vcfRecord)) {
-        return new FilterResult(true, vcfRecord);
+        return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
       }
-      return new FilterResult(false, vcfRecord);
+      return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
     } else {
       throw new IllegalStateException();
     }

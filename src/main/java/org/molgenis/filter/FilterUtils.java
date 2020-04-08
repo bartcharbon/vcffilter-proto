@@ -49,4 +49,12 @@ public class FilterUtils {
     return true;
   }
 
+  public static FilterResultEnum toFilterResultEnum(Boolean bool){
+    if(Boolean.TRUE == bool){
+      return FilterResultEnum.TRUE;
+    }else if(Boolean.FALSE == bool){
+      return FilterResultEnum.FALSE;
+    }
+    return FilterResultEnum.MISSING;
+  }
 }

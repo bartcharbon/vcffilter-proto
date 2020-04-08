@@ -11,6 +11,7 @@ import org.molgenis.filter.ComplexFilter;
 import org.molgenis.filter.ComplexOperator;
 import org.molgenis.filter.Filter;
 import org.molgenis.filter.FilterResult;
+import org.molgenis.filter.FilterUtils;
 import org.molgenis.filter.InfoFilter;
 import org.molgenis.filter.SimpleOperator;
 import org.molgenis.filter.VepFilter;
@@ -73,7 +74,7 @@ public class InheritanceFilters {
     filters.put(TWICE_IN_A_GENE_FILTER, new TwiceOneGeneFilter(records, pedigree));
     filters.put(COMPOUND_FILTER, new CompoundFilter(records, pedigree));
     filters.put(DE_NOVO_FILTER, new DeNovoFilter(pedigree, alleleIdx));
-    filters.put(TRUNCATING, new VepFilter("HGVSp", SimpleOperator.CONTAINS, "*"));
+    filters.put(TRUNCATING, new VepFilter("HGVSp", SimpleOperator.CONTAINS, "*", false, false));
     filters.put(PATIENT_IS_MALE, getPatientIsMaleFilter());
     filters.put(FATHER_AFFECTED, getFatherAffectedFilter());
     filters.put(FATHER_HAS_VARIANT, getFatherHasVariantFilter());
@@ -86,53 +87,53 @@ public class InheritanceFilters {
             filters.get(VKGL_LP_FILTER), filters.get(VKGL_V_FILTER)),
         ComplexOperator.OR));
     filters.put(SPLICE, new VepFilter("Consequence", SimpleOperator.CONTAINS_ANY,
-        "splice_acceptor_variant,splice_donor_variant"));
+        "splice_acceptor_variant,splice_donor_variant", false, false));
     filters.put(AFFECTED_PARENT_HAS_VARIANT, getAffectedParentVariantFilter());
   }
 
   private Filter getAffectedParentVariantFilter() {
     return vcfRecord -> {
       Pedigree affectedParent = PedigreeUtils.getAffectedParent(pedigree);
-      return new FilterResult(!isHmz(vcfRecord, affectedParent.getPatientId(), "0"), vcfRecord);
+      return new FilterResult(FilterUtils.toFilterResultEnum(!isHmz(vcfRecord, affectedParent.getPatientId(), "0")), vcfRecord);
     };
   }
 
   private Filter getUnaffectedParentHmzAltFilter() {
     return vcfRecord -> new FilterResult(
-        isHmz(vcfRecord, PedigreeUtils.getUnaffectedParent(pedigree).getPatientId(), "1"),
+        FilterUtils.toFilterResultEnum(isHmz(vcfRecord, PedigreeUtils.getUnaffectedParent(pedigree).getPatientId(), "1")),
         vcfRecord);
   }
 
   private Filter getPatientHmzAltFilter() {
-    return vcfRecord -> new FilterResult(isHmz(vcfRecord, pedigree.getPatientId(), "1"), vcfRecord);
+    return vcfRecord -> new FilterResult(FilterUtils.toFilterResultEnum(isHmz(vcfRecord, pedigree.getPatientId(), "1")), vcfRecord);
   }
 
   private Filter getFatherHasVariantFilter() {
     return vcfRecord -> {
       Pedigree father = getFather(pedigree);
-      return new FilterResult(!isHmz(vcfRecord, father.getPatientId(), "0"), vcfRecord);
+      return new FilterResult(FilterUtils.toFilterResultEnum(!isHmz(vcfRecord, father.getPatientId(), "0")), vcfRecord);
     };
   }
 
   private Filter getFatherAffectedFilter() {
-    return vcfRecord -> new FilterResult(
-        getFather(pedigree).getAffected() == Affected.TRUE, vcfRecord);
+    return vcfRecord -> new FilterResult(FilterUtils.toFilterResultEnum(
+        getFather(pedigree).getAffected() == Affected.TRUE), vcfRecord);
   }
 
   private Filter getPatientIsMaleFilter() {
-    return vcfRecord -> new FilterResult(pedigree.getSex() == Sex.MALE, vcfRecord);
+    return vcfRecord -> new FilterResult(FilterUtils.toFilterResultEnum(pedigree.getSex() == Sex.MALE), vcfRecord);
   }
 
 
   private Filter getNonPenetranceFilter() {
-    return vcfRecord -> new FilterResult(nonPenetrance, vcfRecord);
+    return vcfRecord -> new FilterResult(FilterUtils.toFilterResultEnum(nonPenetrance), vcfRecord);
   }
 
   private Filter getHmzAltParentPresentFilter(Pedigree pedigree) {
     return vcfRecord -> {
       Pedigree father = getFather(pedigree);
       Pedigree mother = getMother(pedigree);
-      return new FilterResult(isHmz(vcfRecord, father.getPatientId(), "1") || isHmz(vcfRecord, mother.getPatientId(), "1"), vcfRecord);
+      return new FilterResult(FilterUtils.toFilterResultEnum(isHmz(vcfRecord, father.getPatientId(), "1") || isHmz(vcfRecord, mother.getPatientId(), "1")), vcfRecord);
     };
   }
 

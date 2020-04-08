@@ -4,6 +4,6 @@ import org.molgenis.vcf.VcfRecord;
 public class NoOpFilter implements Filter {
   @Override
   public FilterResult filter(VcfRecord vcfRecord) {
-    return new FilterResult(true, vcfRecord);
+    return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
   }
 }

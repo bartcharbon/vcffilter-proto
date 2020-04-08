@@ -1,13 +1,14 @@
 package org.molgenis.filter.yaml;
 
 import java.util.List;
+import org.molgenis.filter.VepFilter;
 
 public class Steps {
   private List<SimpleStep> simple;
   private List<SimpleStep> sample;
   private List<SimpleStep> info;
   private List<FlagStep> infoFlag;
-  private List<SimpleStep> vep;
+  private List<VepStep> vep;
   private List<ComplexStep> complex;
   private List<SimpleStep> custom;
 
@@ -51,11 +52,11 @@ public class Steps {
     this.infoFlag = info;
   }
 
-  public List<SimpleStep> getVep() {
+  public List<VepStep> getVep() {
     return vep;
   }
 
-  public void setVep(List<SimpleStep> vep) {
+  public void setVep(List<VepStep> vep) {
     this.vep = vep;
   }
 

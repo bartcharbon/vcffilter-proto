@@ -24,6 +24,6 @@ public class InfoFlagFilter implements Filter {
         filterResult = true;
       }
     }
-    return new FilterResult(filterResult == operator.equals(PRESENT), vcfRecord);
+    return new FilterResult(FilterUtils.toFilterResultEnum(filterResult == operator.equals(PRESENT)), vcfRecord);
   }
 }

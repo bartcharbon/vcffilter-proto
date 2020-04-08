@@ -10,6 +10,8 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.molgenis.filter.Filter;
 import org.molgenis.filter.FilterResult;
+import org.molgenis.filter.FilterResultEnum;
+import org.molgenis.filter.FilterUtils;
 import org.molgenis.inheritance.pedigree.Affected;
 import org.molgenis.inheritance.pedigree.Pedigree;
 import org.molgenis.vcf.VcfRecord;
@@ -41,12 +43,13 @@ public class TwiceOneGeneFilter implements Filter {
           .filter(record -> inGene(filteredGenes.get(0), record)).collect(
               Collectors.toList());
       if(variantsInGene.size() > 1) {
-        return new FilterResult(parentNotHasVariant(vcfRecord, variantsInGene, pedigree), vcfRecord);
+        return new FilterResult(FilterUtils
+            .toFilterResultEnum(parentNotHasVariant(vcfRecord, variantsInGene, pedigree)), vcfRecord);
       }
     }else{
       System.err.println("No gene found for variant: " + getRecordIdentifierString(vcfRecord));
     }
-    return new FilterResult(false, vcfRecord);
+    return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
   }
 
   private boolean parentNotHasVariant(VcfRecord vcfRecord, List<VcfRecord> variantsInGene,

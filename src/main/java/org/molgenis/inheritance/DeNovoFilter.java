@@ -4,6 +4,7 @@ import static org.molgenis.vcf.utils.VcfUtils.deNovo;
 
 import org.molgenis.filter.Filter;
 import org.molgenis.filter.FilterResult;
+import org.molgenis.filter.FilterUtils;
 import org.molgenis.inheritance.pedigree.Pedigree;
 import org.molgenis.vcf.VcfRecord;
 
@@ -18,6 +19,7 @@ public class DeNovoFilter implements Filter {
 
   @Override
   public FilterResult filter(VcfRecord vcfRecord) {
-    return new FilterResult(deNovo(vcfRecord, pedigree, alleleIdx), vcfRecord);
+    return new FilterResult(
+        FilterUtils.toFilterResultEnum(deNovo(vcfRecord, pedigree, alleleIdx)), vcfRecord);
   }
 }

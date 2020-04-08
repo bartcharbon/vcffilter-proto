@@ -76,8 +76,8 @@ public class YamlLoader {
       }
     }
     if(spec.getSteps().getVep()!=null) {
-      for (SimpleStep simple : spec.getSteps().getVep()) {
-        filters.put(simple.getName(), toVepFilter(simple.getFilter(), inputFile));
+      for (VepStep vep : spec.getSteps().getVep()) {
+        filters.put(vep.getName(), toVepFilter(vep.getFilter(), inputFile));
       }
     }
     if(spec.getSteps().getSample()!=null) {
@@ -103,13 +103,15 @@ public class YamlLoader {
     return new InfoFlagFilter(filter.getField(), getOperator(filter.getOperator()));
   }
 
-  private static Filter toVepFilter(org.molgenis.filter.yaml.SimpleFilter filter, File inputFile) {
+  private static Filter toVepFilter(org.molgenis.filter.yaml.VepFilter filter, File inputFile) {
     if(filter.getFile() != null){
       String file = preProcessFilePath(filter.getFile(), inputFile);
-      return new VepFilter(filter.getField(),(SimpleOperator) getOperator(filter.getOperator()), file, filter.getColumn());
+      return new VepFilter(filter.getField(),(SimpleOperator) getOperator(filter.getOperator()), file, filter.getColumn(),
+          filter.isKeepMissing(), filter.isKeepFalse());
     }
     else{
-      return new VepFilter(filter.getField(),(SimpleOperator) getOperator(filter.getOperator()),filter.getValue());
+      return new VepFilter(filter.getField(),(SimpleOperator) getOperator(filter.getOperator()),filter.getValue(),
+          filter.isKeepMissing(), filter.isKeepFalse());
     }
   }
 
@@ -143,7 +145,10 @@ public class YamlLoader {
   }
 
   private static FilterStep toFilterStep(Node node) {
-    return new FilterStep(node.getName(), filters.get(node.getFilter()),toAction(node.getPass()),toAction(node.getFail()));
+    return new FilterStep(node.getName(), filters.get(node.getFilter()),
+        toAction(node.getPass()),
+        toAction(node.getFail()),
+        toAction(node.getMissing()!=null?node.getMissing():node.getFail()));
   }
 
   private static FilterAction toAction(NextStep action) {

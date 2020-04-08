@@ -100,9 +100,9 @@ public class FilterRunner {
   private FilterResult processFilterAction(Map<String, FilterStep> filters,
       FilterStep filterStep, VcfRecord record, StringBuilder route) {
     FilterResult filterResult = filterStep.getFilter().filter(record);
-    FilterAction action = filterStep.getAction(filterResult.getPass());
+    FilterAction action = filterStep.getAction(filterResult.getResult());
     appendToRoute(route, " > ");
-    appendToRoute(route, filterStep.getKey()+"("+filterResult.getPass()+")");
+    appendToRoute(route, filterStep.getKey()+"("+filterResult.getResult()+")");
     processLabels(record, filterResult, action);
     if (action.getState() == FilterState.KEEP) {
       appendToRoute(route, " > KEEP" + "\n");
