@@ -74,7 +74,7 @@ public class InheritanceFilters {
     filters.put(TWICE_IN_A_GENE_FILTER, new TwiceOneGeneFilter(records, pedigree));
     filters.put(COMPOUND_FILTER, new CompoundFilter(records, pedigree));
     filters.put(DE_NOVO_FILTER, new DeNovoFilter(pedigree, alleleIdx));
-    filters.put(TRUNCATING, new VepFilter("HGVSp", SimpleOperator.CONTAINS, "*", false, false));
+    filters.put(TRUNCATING, new VepFilter("HGVSp", SimpleOperator.CONTAINS, "*"));
     filters.put(PATIENT_IS_MALE, getPatientIsMaleFilter());
     filters.put(FATHER_AFFECTED, getFatherAffectedFilter());
     filters.put(FATHER_HAS_VARIANT, getFatherHasVariantFilter());
@@ -87,7 +87,7 @@ public class InheritanceFilters {
             filters.get(VKGL_LP_FILTER), filters.get(VKGL_V_FILTER)),
         ComplexOperator.OR));
     filters.put(SPLICE, new VepFilter("Consequence", SimpleOperator.CONTAINS_ANY,
-        "splice_acceptor_variant,splice_donor_variant", false, false));
+        "splice_acceptor_variant,splice_donor_variant"));
     filters.put(AFFECTED_PARENT_HAS_VARIANT, getAffectedParentVariantFilter());
   }
 

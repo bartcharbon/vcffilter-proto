@@ -1,26 +1,37 @@
 package org.molgenis.filter;
 
 import static java.util.Objects.requireNonNull;
+import static org.molgenis.filter.FilterTool.FILTER_LABELS;
 import static org.molgenis.filter.FilterTool.GZIP_EXTENSION;
 import static org.molgenis.vcf.utils.VcfUtils.getRecordIdentifierString;
 import static org.molgenis.vcf.utils.VcfUtils.getVcfReader;
 import static org.molgenis.vcf.utils.VcfUtils.getVcfWriter;
+import static org.molgenis.vcf.utils.VcfUtils.removeInfoField;
+import static org.molgenis.vcf.utils.VcfUtils.updateInfoField;
 import static org.molgenis.vcf.utils.VcfUtils.writeRecord;
+import static org.molgenis.vcf.utils.VepUtils.VEP_INFO_NAME;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
+import joptsimple.internal.Strings;
 import org.apache.commons.io.output.NullWriter;
 import org.molgenis.vcf.VcfReader;
 import org.molgenis.vcf.VcfRecord;
 import org.molgenis.vcf.VcfWriter;
 import org.molgenis.vcf.utils.VcfUtils;
+import org.molgenis.vcf.utils.VepUtils;
 
 public class FilterRunner {
   private final File inputFile;
@@ -81,10 +92,50 @@ public class FilterRunner {
       Writer routesWriter) throws IOException {
     FilterStep filterStep = StreamSupport.stream(filters.entrySet().spliterator(), false)
         .findFirst().get().getValue();
-    StringBuilder route = new StringBuilder(getRecordIdentifierString(record));
-    FilterResult result = processFilterAction(filters, filterStep, record, route);
-    routesWriter.write(route.toString());
-    return result;
+    List<VcfRecord> splittedRecords = splitRecord(record);
+    List<FilterResult> results = new ArrayList<>();
+    int index = 0;
+    for(VcfRecord splittedRecord : splittedRecords) {
+      StringBuilder route = new StringBuilder(getRecordIdentifierString(record) + "_"+ index);
+      FilterResult result = processFilterAction(filters, filterStep, splittedRecord, route);
+      if(result != null) {
+        results.add(result);
+      }
+      routesWriter.write(route.toString());
+      index++;
+    }if(results.isEmpty()){
+      return null;
+    }
+    return mergeResults(results, record);
+  }
+
+  private FilterResult mergeResults(List<FilterResult> results, VcfRecord vcfRecord) {
+    List<String> vepValues = new ArrayList<>();
+    Set<String> labels = new HashSet<>();
+    for(FilterResult result : results){
+      String[] values = VepUtils.getVepValues(result.getRecord());
+      if(values.length == 1) {
+        vepValues.add(values[0]);
+      } else if(values.length > 0) {
+        throw new RuntimeException("More than one VEP value should not occur here.");
+      }
+      String[] labelValues = VcfUtils.getInfoFieldValue(result.getRecord(), FILTER_LABELS).split(",");
+      if(labelValues.length > 0) {
+        labels.addAll(Arrays.asList(labelValues));
+      }
+    }
+    updateInfoField(vcfRecord, FILTER_LABELS, Strings.join(labels, ","));
+    updateInfoField(vcfRecord, VEP_INFO_NAME, Strings.join(vepValues, ","));
+    return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
+  }
+
+  private List<VcfRecord> splitRecord(VcfRecord record) {
+    String[] vepValues = VepUtils.getVepValues(record);
+    List<VcfRecord> records = new ArrayList<>();
+    for(String vepValue : vepValues){
+      records.add(updateInfoField(record.createClone(), VEP_INFO_NAME, vepValue));
+    }
+    return records;
   }
 
   private Writer getRoutesWriter(File routesFile) throws IOException {

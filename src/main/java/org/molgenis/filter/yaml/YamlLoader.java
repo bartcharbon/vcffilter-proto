@@ -106,12 +106,10 @@ public class YamlLoader {
   private static Filter toVepFilter(org.molgenis.filter.yaml.VepFilter filter, File inputFile) {
     if(filter.getFile() != null){
       String file = preProcessFilePath(filter.getFile(), inputFile);
-      return new VepFilter(filter.getField(),(SimpleOperator) getOperator(filter.getOperator()), file, filter.getColumn(),
-          filter.isKeepMissing(), filter.isKeepFalse());
+      return new VepFilter(filter.getField(),(SimpleOperator) getOperator(filter.getOperator()), file, filter.getColumn());
     }
     else{
-      return new VepFilter(filter.getField(),(SimpleOperator) getOperator(filter.getOperator()),filter.getValue(),
-          filter.isKeepMissing(), filter.isKeepFalse());
+      return new VepFilter(filter.getField(),(SimpleOperator) getOperator(filter.getOperator()),filter.getValue());
     }
   }
 

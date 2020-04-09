@@ -7,42 +7,31 @@ import static org.molgenis.filter.FilterUtils.containsAll;
 import static org.molgenis.filter.FilterUtils.containsAny;
 import static org.molgenis.filter.FilterUtils.containsNone;
 import static org.molgenis.filter.FilterUtils.containsWord;
-import static org.molgenis.vcf.utils.VcfUtils.updateInfoField;
-import static org.molgenis.vcf.utils.VepUtils.VEP_INFO_NAME;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import joptsimple.internal.Strings;
 import org.molgenis.vcf.VcfRecord;
 import org.molgenis.vcf.utils.VepUtils;
 
 public class VepFilter implements Filter {
   private final String field;
   private final SimpleOperator operator;
-  private final boolean keepFalseValue;
   private String filterValue;
   private String columnName;
-  private final boolean keepMissingValue;
   private FileResource fileResource;
 
-  public VepFilter(String field, SimpleOperator operator, String value, boolean keepMissingValue, boolean keepFalseValue) {
+  public VepFilter(String field, SimpleOperator operator, String value) {
     this.field = requireNonNull(field);
     this.operator = requireNonNull(operator);
     this.filterValue = requireNonNull(value);
-    this.keepMissingValue = requireNonNull(keepMissingValue);
-    this.keepFalseValue = requireNonNull(keepFalseValue);
   }
 
-  public VepFilter(String field, SimpleOperator operator, String path, String column,
-      boolean keepMissingValue, boolean keepFalseValue) {
+  public VepFilter(String field, SimpleOperator operator, String path, String column) {
     this.field = requireNonNull(field);
     this.operator = requireNonNull(operator);
     this.columnName = column;
-    this.keepMissingValue = requireNonNull(keepMissingValue);
-    this.keepFalseValue = requireNonNull(keepFalseValue);
     if(path != null) {
       loadFile(path);
     }
@@ -55,54 +44,21 @@ public class VepFilter implements Filter {
 
   @Override
   public FilterResult filter(VcfRecord vcfRecord) {
-    List<String> filteredVepValues = new ArrayList<>();
     String[] vepValues = VepUtils.getVepValues(vcfRecord);
     // boolean to indicate if any Vep hit contained a value for the filter field
-    boolean isAtLeastOnePresent = false;
-    boolean isAtLeastOneTrue = false;
-    if(keepFalseValue){
-      for (String vepValue : vepValues) {
-        if (!vepValue.isEmpty()) {
-          String value = VepUtils.getValueForKey(field, vcfRecord.getVcfMeta(), vepValue);
-          if(!value.isEmpty()){
-            isAtLeastOnePresent = true;
+        if (vepValues.length > 0 && !vepValues[0].isEmpty()) {
+          String value = VepUtils.getValueForKey(field, vcfRecord.getVcfMeta(), vepValues[0]);
+          if(value.isEmpty()){
+            return new FilterResult(FilterResultEnum.MISSING, vcfRecord);
           }
-          else if (!value.isEmpty() && filterSingleValue(value)) {
-            isAtLeastOneTrue = true;
+          else if (filterSingleValue(value)) {
+            return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
           }
-        }
-      }
-      if(!isAtLeastOnePresent){
-        return new FilterResult(FilterResultEnum.MISSING, vcfRecord);
-      }
-      if (!isAtLeastOneTrue) {
-        return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
-      }
-      return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
-    }
-    else {
-      for (String vepValue : vepValues) {
-        if (!vepValue.isEmpty()) {
-          String value = VepUtils.getValueForKey(field, vcfRecord.getVcfMeta(), vepValue);
-          if (!value.isEmpty()) {
-            isAtLeastOnePresent = true;
-          }
-          if (value.isEmpty() && keepMissingValue) {
-            filteredVepValues.add(vepValue);
-          } else if (!value.isEmpty() && filterSingleValue(value)) {
-            filteredVepValues.add(vepValue);
+          else{
+            return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
           }
         }
-      }
-      if (!isAtLeastOnePresent) {
-        return new FilterResult(FilterResultEnum.MISSING, vcfRecord);
-      }
-      if (filteredVepValues.isEmpty()) {
-        return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
-      }
-      return new FilterResult(FilterResultEnum.TRUE, updateInfoField(vcfRecord, VEP_INFO_NAME,
-          Strings.join(filteredVepValues, ",")));
-    }
+    return new FilterResult(FilterResultEnum.MISSING, vcfRecord);
   }
 
   private boolean filterSingleValue(String value) {

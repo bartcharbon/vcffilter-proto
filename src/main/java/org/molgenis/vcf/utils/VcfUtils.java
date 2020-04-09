@@ -102,6 +102,21 @@ public class VcfUtils {
     return stringBuilder.toString();
   }
 
+  private static String removeInfoToken(VcfRecord record, String key) {
+    Iterable<VcfInfo> vcfInformations = record.getInformation();
+
+    boolean hasInformation = vcfInformations.iterator().hasNext();
+
+    StringBuilder stringBuilder = new StringBuilder();
+
+    if (hasInformation) {
+      stringBuilder.append(StreamSupport.stream(vcfInformations.spliterator(), false)
+          .filter(vcfInfo -> !vcfInfo.getKey().equals(key))
+          .map(VcfUtils::createInfoTokenPart)
+          .collect(joining(";")));
+    }
+    return stringBuilder.toString();
+  }
 
   private static String createInfoTokenPart(VcfInfo vcfInfo) {
     return createInfoTokenPart(vcfInfo.getKey(), vcfInfo.getValRaw());
@@ -157,6 +172,36 @@ public class VcfUtils {
     tokens.add(vcfRecord.getQuality()==null?MISSING_VALUE:vcfRecord.getQuality());
     tokens.add(vcfRecord.getFilterStatus()==null?MISSING_VALUE:vcfRecord.getFilterStatus());
     tokens.add(createInfoToken(vcfRecord, key, value, isReplace));
+
+    Iterable<VcfSample> vcfSamples = vcfRecord.getSamples();
+    if (vcfSamples.iterator().hasNext()) {
+      tokens.add(createFormatToken(vcfRecord));
+      tokens.addAll(getSampleTokens(vcfRecord));
+    }
+    return new VcfRecord(vcfMeta, tokens.toArray(new String[0]));
+  }
+
+  public static VcfRecord removeInfoField(VcfRecord vcfRecord, String key){
+
+    VcfMeta vcfMeta = vcfRecord.getVcfMeta();
+    List<String> tokens = new ArrayList<>();
+    tokens.add(vcfRecord.getChromosome());
+    tokens.add(String.valueOf(vcfRecord.getPosition()));
+
+    List<String> identifiers = vcfRecord.getIdentifiers();
+    tokens.add(!identifiers.isEmpty() ? identifiers.stream().collect(joining(";")) : MISSING_VALUE);
+
+    tokens.add(vcfRecord.getReferenceAllele().toString());
+    List<String> altTokens = vcfRecord.getAlternateAlleles().stream().map(allele -> allele.getAlleleAsString()).collect(toList());
+    if (altTokens.size() == 0) {
+      tokens.add(MISSING_VALUE);
+    } else {
+      tokens.add(altTokens.stream().collect(joining(",")));
+    }
+
+    tokens.add(vcfRecord.getQuality()==null?MISSING_VALUE:vcfRecord.getQuality());
+    tokens.add(vcfRecord.getFilterStatus()==null?MISSING_VALUE:vcfRecord.getFilterStatus());
+    tokens.add(removeInfoToken(vcfRecord, key));
 
     Iterable<VcfSample> vcfSamples = vcfRecord.getSamples();
     if (vcfSamples.iterator().hasNext()) {
