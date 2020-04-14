@@ -22,6 +22,7 @@ public class InheritanceMatcher {
   private static final String TSV = ".tsv";
   private static final String FILTER_FILE_HEADER = "Filterfile";
   private static final String ROUTES_FILE_HEADER = "Routesfile";
+  private static final String IS_LOGIC = "isLogicFiltering";
 
   public static void main(String[] args) {
     OptionParser parser = createOptionParser();
@@ -40,6 +41,7 @@ public class InheritanceMatcher {
     parser.acceptsAll(asList("q", ROUTE), "Generate a 'route' file");
     parser.acceptsAll(asList("s", SAMPLE), "Sample identifier").withRequiredArg().ofType(String.class);
     parser.acceptsAll(asList("n", NON_PENETRANCE), "Non penetrance");
+    parser.acceptsAll(asList("l", IS_LOGIC), "Logic filtering");
     return parser;
   }
 
@@ -79,6 +81,7 @@ public class InheritanceMatcher {
     }
 
     boolean isReplace = options.has(REPLACE);
+    boolean isLogicFiltering = options.has(IS_LOGIC);
 
     String fullInputFileName = inputFile.getName();
     String extension = fullInputFileName.substring(fullInputFileName.indexOf("."));
@@ -96,7 +99,7 @@ public class InheritanceMatcher {
       String routesFileHeaderName = ROUTES_FILE_HEADER;
       String filterLabelsInfoField = FILTER_LABELS;
 
-      FilterRunner filterRunner = new FilterRunner(inputFile, extension, outputFile, null,filterFileHeaderName, routesFileHeaderName, filterLabelsInfoField, routesFile);
+      FilterRunner filterRunner = new FilterRunner(inputFile, extension, outputFile, null,filterFileHeaderName, routesFileHeaderName, filterLabelsInfoField, routesFile, isLogicFiltering);
       InheritanceTree inheritanceTree = new InheritanceTree(filterRunner, nonPenetrance, inputFile, pedigreeFile, sampleId);
       inheritanceTree.match();
     } catch (Exception e) {

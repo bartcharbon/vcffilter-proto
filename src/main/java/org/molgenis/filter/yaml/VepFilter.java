@@ -6,8 +6,6 @@ public class VepFilter {
   String value;
   String file;
   String column;
-  boolean keepMissing;
-  boolean keepFalse;
 
   public String getField() {
     return field;
@@ -47,21 +45,5 @@ public class VepFilter {
 
   public void setColumn(String column) {
     this.column = column;
-  }
-
-  public boolean isKeepMissing() {
-    return keepMissing;
-  }
-
-  public void setKeepMissing(boolean keepMissing) {
-    this.keepMissing = keepMissing;
-  }
-
-  public boolean isKeepFalse() {
-    return keepFalse;
-  }
-
-  public void setKeepFalse(boolean keepFalse) {
-    this.keepFalse = keepFalse;
   }
 }

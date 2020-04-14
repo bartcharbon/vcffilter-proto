@@ -1,12 +1,13 @@
 package org.molgenis.filter;
 
 import static java.util.Objects.requireNonNull;
+import static org.molgenis.filter.FilterResultEnum.TRUE;
 import static org.molgenis.filter.FilterTool.FILTER_LABELS;
 import static org.molgenis.filter.FilterTool.GZIP_EXTENSION;
+import static org.molgenis.vcf.utils.VcfUtils.addOrUpdateInfoField;
 import static org.molgenis.vcf.utils.VcfUtils.getRecordIdentifierString;
 import static org.molgenis.vcf.utils.VcfUtils.getVcfReader;
 import static org.molgenis.vcf.utils.VcfUtils.getVcfWriter;
-import static org.molgenis.vcf.utils.VcfUtils.removeInfoField;
 import static org.molgenis.vcf.utils.VcfUtils.updateInfoField;
 import static org.molgenis.vcf.utils.VcfUtils.writeRecord;
 import static org.molgenis.vcf.utils.VepUtils.VEP_INFO_NAME;
@@ -34,6 +35,9 @@ import org.molgenis.vcf.utils.VcfUtils;
 import org.molgenis.vcf.utils.VepUtils;
 
 public class FilterRunner {
+
+  private static final String LOGIC_FILTER_RESULT_TRUE = "TRUE";
+  private static final String LOGIC_FILTER_RESULT_FALSE = "FALSE";
   private final File inputFile;
   private final String extension;
   private final File outputFile;
@@ -42,11 +46,15 @@ public class FilterRunner {
   private final String filterFileHeaderName;
   private final String routesFileHeaderName;
   private final String filterLabelsInfoField;
+  private final boolean isLogicFiltering;
   private boolean isLogRoute;
+
+  private String LOGIC_FILTER_KEY = "FILTER_RESULT";
+  private static final String LOGIC_FILTER_DESC = "";
 
   public FilterRunner(File inputFile, String extension, File outputFile,
       File archivedFilterFile, String filterFileHeaderName,
-      String routesFileHeaderName, String filterLabelsInfoField, File routesFile) {
+      String routesFileHeaderName, String filterLabelsInfoField, File routesFile, boolean isLogicFiltering) {
     this.inputFile = requireNonNull(inputFile);
     this.extension = requireNonNull(extension);
     this.outputFile = requireNonNull(outputFile);
@@ -56,6 +64,7 @@ public class FilterRunner {
     this.filterLabelsInfoField = filterLabelsInfoField;
     this.routesFile = routesFile;
     this.isLogRoute = routesFile != null;
+    this.isLogicFiltering = isLogicFiltering;
   }
 
   public void runFilters(Map<String, FilterStep> filters) throws Exception {
@@ -90,6 +99,7 @@ public class FilterRunner {
   }
   private FilterResult startFiltering(VcfRecord record, Map<String, FilterStep> filters,
       Writer routesWriter) throws IOException {
+
     FilterStep filterStep = StreamSupport.stream(filters.entrySet().spliterator(), false)
         .findFirst().get().getValue();
     List<VcfRecord> splittedRecords = splitRecord(record);
@@ -112,8 +122,15 @@ public class FilterRunner {
   private FilterResult mergeResults(List<FilterResult> results, VcfRecord vcfRecord) {
     List<String> vepValues = new ArrayList<>();
     Set<String> labels = new HashSet<>();
+    boolean isAtLeastOneKeep = false;
     for(FilterResult result : results){
       String[] values = VepUtils.getVepValues(result.getRecord());
+      if(isLogicFiltering) {
+        String resultValue = VcfUtils.getInfoFieldValue(result.getRecord(), LOGIC_FILTER_KEY);
+        if (resultValue.equals(LOGIC_FILTER_RESULT_TRUE)) {
+          isAtLeastOneKeep = true;
+        }
+      }
       if(values.length == 1) {
         vepValues.add(values[0]);
       } else if(values.length > 0) {
@@ -124,9 +141,18 @@ public class FilterRunner {
         labels.addAll(Arrays.asList(labelValues));
       }
     }
+    if(isLogicFiltering){
+      if(isAtLeastOneKeep){
+        vcfRecord = addOrUpdateInfoField(vcfRecord,LOGIC_FILTER_KEY,
+            LOGIC_FILTER_RESULT_TRUE,LOGIC_FILTER_DESC,"1",true);
+      }else{
+        vcfRecord = addOrUpdateInfoField(vcfRecord,LOGIC_FILTER_KEY,
+            LOGIC_FILTER_RESULT_FALSE,LOGIC_FILTER_DESC,"1",true);
+      }
+    }
     updateInfoField(vcfRecord, FILTER_LABELS, Strings.join(labels, ","));
     updateInfoField(vcfRecord, VEP_INFO_NAME, Strings.join(vepValues, ","));
-    return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
+    return new FilterResult(TRUE, vcfRecord);
   }
 
   private List<VcfRecord> splitRecord(VcfRecord record) {
@@ -157,9 +183,18 @@ public class FilterRunner {
     processLabels(record, filterResult, action);
     if (action.getState() == FilterState.KEEP) {
       appendToRoute(route, " > KEEP" + "\n");
+      if(isLogicFiltering){
+        filterResult.setRecord(addOrUpdateInfoField(record,LOGIC_FILTER_KEY,
+            LOGIC_FILTER_RESULT_TRUE,LOGIC_FILTER_DESC,"1",true));
+      }
       return filterResult;
     } else if (action.getState() == FilterState.REMOVE) {
       appendToRoute(route, " > REMOVE" + "\n");
+      if(isLogicFiltering){
+        filterResult.setRecord(addOrUpdateInfoField(record,LOGIC_FILTER_KEY,
+            LOGIC_FILTER_RESULT_FALSE,LOGIC_FILTER_DESC,"1",true));
+        return filterResult;
+      }
       return null;
     } else {
       String nextFilter = action.getNextStep();

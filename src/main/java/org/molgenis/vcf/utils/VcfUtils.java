@@ -148,7 +148,7 @@ public class VcfUtils {
     return null;
   }
 
-  private static VcfRecord addOrUpdateInfoField(VcfRecord vcfRecord, String key, String value, String description, String number,
+  public static VcfRecord addOrUpdateInfoField(VcfRecord vcfRecord, String key, String value, String description, String number,
       boolean isReplace){
 
     VcfMeta vcfMeta = vcfRecord.getVcfMeta();

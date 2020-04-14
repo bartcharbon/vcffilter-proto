@@ -30,6 +30,7 @@ public class FilterTool {
   public static final String GZIP_EXTENSION = ".gz";
   private static final String FILTER_FILE_HEADER = "Filterfile";
   private static final String ROUTES_FILE_HEADER = "Routesfile";
+  private static final String IS_LOGIC = "isLogicFiltering";
 
   public static void main(String[] args) {
     OptionParser parser = createOptionParser();
@@ -48,6 +49,7 @@ public class FilterTool {
     parser.acceptsAll(asList("q", ROUTE), "Generate a 'route' file");
     parser.acceptsAll(asList("p", PARAMS), "Parameters to be replaced in the filter file, formet 'KEY1=VALUE1;KEY2=VALUE2'").withRequiredArg().ofType(String.class);
     parser.acceptsAll(asList("s", SAMPLE), "Sample identifier").withRequiredArg().ofType(String.class);
+    parser.acceptsAll(asList("l", IS_LOGIC), "Logic filtering");
     return parser;
   }
 
@@ -79,6 +81,7 @@ public class FilterTool {
     }
 
     boolean isReplace = options.has(REPLACE);
+    boolean isLogicFiltering = options.has(IS_LOGIC);
 
     String fullInputFileName = inputFile.getName();
     String extension = fullInputFileName.substring(fullInputFileName.indexOf('.'));
@@ -110,7 +113,7 @@ public class FilterTool {
       String routesFileHeaderName = ROUTES_FILE_HEADER;
       String filterLabelsInfoField = FILTER_LABELS;
 
-      FilterRunner filterRunner = new FilterRunner(inputFile, extension, outputFile, archivedFilterFile,filterFileHeaderName, routesFileHeaderName, filterLabelsInfoField, routesFile);
+      FilterRunner filterRunner = new FilterRunner(inputFile, extension, outputFile, archivedFilterFile,filterFileHeaderName, routesFileHeaderName, filterLabelsInfoField, routesFile, isLogicFiltering);
       filterRunner.runFilters(filters);
     } catch (Exception e) {
       e.printStackTrace();
