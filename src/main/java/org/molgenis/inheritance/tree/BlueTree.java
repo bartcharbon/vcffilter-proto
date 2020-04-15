@@ -70,7 +70,7 @@ public class BlueTree {
             new FilterAction(FilterState.NEXT, BLUE_11, null)));
     result
         .put(BLUE_7, new FilterStep(BLUE_7, filters.get(DE_NOVO_FILTER),
-            new FilterAction(FilterState.KEEP, null , null),
+            new FilterAction(FilterState.KEEP, null , "de novo"),
             new FilterAction(FilterState.NEXT, BLUE_12, null)));
     result
         .put(BLUE_8, new FilterStep(BLUE_8, filters.get(PATIENT_IS_MALE),
@@ -82,7 +82,7 @@ public class BlueTree {
             new FilterAction(FilterState.NEXT, IF1 , null)));
     result
         .put(BLUE_10, new FilterStep(BLUE_10, filters.get(DE_NOVO_FILTER),
-            new FilterAction(FilterState.KEEP, null , null),
+            new FilterAction(FilterState.KEEP, null , "de novo"),
             new FilterAction(FilterState.NEXT, BLUE_14, null)));
     result
         .put(BLUE_11, new FilterStep(BLUE_11, filters.get(NON_PENETRANCE),

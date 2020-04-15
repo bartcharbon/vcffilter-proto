@@ -67,7 +67,7 @@ public class RedTree {
             new FilterAction(FilterState.NEXT, IF1 , null)));
     result
         .put(RED_6, new FilterStep(RED_6, filters.get(DE_NOVO_FILTER),
-            new FilterAction(FilterState.KEEP, null , null),
+            new FilterAction(FilterState.KEEP, null , "de novo"),
             new FilterAction(FilterState.NEXT, RED_11, null)));
     result
         .put(RED_7, new FilterStep(RED_7, filters.get(PATIENT_HMZ_ALT),
@@ -83,7 +83,7 @@ public class RedTree {
             new FilterAction(FilterState.NEXT, RED_13, null)));
     result
         .put(RED_10, new FilterStep(RED_10, filters.get(DE_NOVO_FILTER),
-            new FilterAction(FilterState.KEEP, null , null),
+            new FilterAction(FilterState.KEEP, null , "de novo"),
             new FilterAction(FilterState.NEXT, RED_14, null)));
     result
         .put(RED_11, new FilterStep(RED_11, filters.get(NON_PENETRANCE),

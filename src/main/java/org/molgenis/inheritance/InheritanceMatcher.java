@@ -15,7 +15,7 @@ public class InheritanceMatcher {
   public static final String REPLACE = "replace";
   public static final String SAMPLE = "sample";
   private static final String PEDIGREE_FILE = "pedigreeFile";
-  private static final String FILTER_LABELS = "FILTER_LABELS";
+  private static final String INHERITANCE_LABELS = "INHERITANCE_LABELS";
   private static final String ROUTE = "route";
   private static final String OUTPUT_FILE_POSTFIX = ".inheritance";
   private static final String ROUTE_FILE_POSTFIX = ".route";
@@ -97,7 +97,7 @@ public class InheritanceMatcher {
     try {
       String filterFileHeaderName = FILTER_FILE_HEADER;
       String routesFileHeaderName = ROUTES_FILE_HEADER;
-      String filterLabelsInfoField = FILTER_LABELS;
+      String filterLabelsInfoField = INHERITANCE_LABELS;
 
       FilterRunner filterRunner = new FilterRunner(inputFile, extension, outputFile, null,filterFileHeaderName, routesFileHeaderName, filterLabelsInfoField, routesFile, isLogicFiltering);
       InheritanceTree inheritanceTree = new InheritanceTree(filterRunner, nonPenetrance, inputFile, pedigreeFile, sampleId);

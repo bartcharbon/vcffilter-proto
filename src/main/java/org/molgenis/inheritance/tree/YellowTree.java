@@ -77,7 +77,7 @@ public class YellowTree {
             new FilterAction(FilterState.NEXT, YELLOW14, null)));
     result
         .put(YELLOW10, new FilterStep(YELLOW10, filters.get(DE_NOVO_FILTER),
-            new FilterAction(FilterState.KEEP, null, null),
+            new FilterAction(FilterState.KEEP, null, "de novo"),
             new FilterAction(FilterState.NEXT, IF1, null)));
     result
         .put(YELLOW11, new FilterStep(YELLOW11, filters.get(TWICE_IN_A_GENE_FILTER),
@@ -89,7 +89,7 @@ public class YellowTree {
             new FilterAction(FilterState.KEEP, null,null)));
     result
         .put(YELLOW14, new FilterStep(YELLOW14, filters.get(DE_NOVO_FILTER),
-            new FilterAction(FilterState.KEEP, null, null),
+            new FilterAction(FilterState.KEEP, null, "de novo"),
             new FilterAction(FilterState.NEXT, YELLOW15, null)));
     result
         .put(YELLOW15, new FilterStep(YELLOW15, filters.get(PATIENT_HMZ_ALT),
