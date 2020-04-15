@@ -6,4 +6,8 @@ public class NoOpFilter implements Filter {
   public FilterResult filter(VcfRecord vcfRecord) {
     return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
   }
+  @Override
+  public String getName() {
+    return "no-op";
+  }
 }

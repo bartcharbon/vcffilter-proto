@@ -19,12 +19,4 @@ public class ComplexFilter {
   public void setOperator(String operator) {
     this.operator = operator;
   }
-
-  @Override
-  public String toString() {
-    return "ComplexFilter{" +
-        "fields='" + fields + '\'' +
-        ", operator='" + operator + '\'' +
-        '}';
-  }
 }

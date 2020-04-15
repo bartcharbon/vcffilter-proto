@@ -20,8 +20,10 @@ public class InfoFilter implements Filter {
   private final String field;
   private final SimpleOperator operator;
   private final String filterValue;
+  private final String name;
 
-  public InfoFilter(String field, SimpleOperator operator, String value) {
+  public InfoFilter(String name, String field, SimpleOperator operator, String value) {
+    this.name = requireNonNull(name);
     this.field = requireNonNull(field);
     this.operator = requireNonNull(operator);
     this.filterValue = requireNonNull(value);
@@ -149,5 +151,10 @@ public class InfoFilter implements Filter {
         ", operator=" + operator +
         ", filterValue='" + filterValue + '\'' +
         '}';
+  }
+
+  @Override
+  public String getName() {
+    return name;
   }
 }

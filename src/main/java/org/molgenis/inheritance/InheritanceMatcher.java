@@ -15,7 +15,7 @@ public class InheritanceMatcher {
   public static final String REPLACE = "replace";
   public static final String SAMPLE = "sample";
   private static final String PEDIGREE_FILE = "pedigreeFile";
-  private static final String INHERITANCE_LABELS = "INHERITANCE_LABELS";
+  private static final String INHERITANCE_LABELS = "INHERITANCE";
   private static final String ROUTE = "route";
   private static final String OUTPUT_FILE_POSTFIX = ".inheritance";
   private static final String ROUTE_FILE_POSTFIX = ".route";

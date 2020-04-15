@@ -17,12 +17,13 @@ import joptsimple.internal.Strings;
 import org.molgenis.vcf.VcfRecord;
 
 public class SimpleFilter implements Filter {
-
+  private final String name;
   private final String field;
   private final SimpleOperator operator;
   private final String filterValue;
 
-  public SimpleFilter(String field, SimpleOperator operator, String value) {
+  public SimpleFilter(String name, String field, SimpleOperator operator, String value) {
+    this.name = requireNonNull(name);
     this.field = requireNonNull(field);
     this.operator = requireNonNull(operator);
     this.filterValue = requireNonNull(value);
@@ -140,5 +141,10 @@ public class SimpleFilter implements Filter {
   @Override
   public int hashCode() {
     return Objects.hash(field, operator, filterValue);
+  }
+
+  @Override
+  public String getName() {
+    return name;
   }
 }

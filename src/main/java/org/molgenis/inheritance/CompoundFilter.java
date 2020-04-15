@@ -81,6 +81,11 @@ public class CompoundFilter implements Filter {
     return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
   }
 
+  @Override
+  public String getName() {
+    return "Compound";
+  }
+
 
   private boolean inGene(String targetGene, VcfRecord record) {
     Set<String> genes = VepUtils.getVepValues("SYMBOL", record);

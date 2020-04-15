@@ -16,10 +16,12 @@ import org.molgenis.vcf.VcfRecord;
 public class CustomFilter implements Filter {
 
   private final String fields;
+  private final String name;
   private File file;
   private String value;
 
-  public CustomFilter(String fields, File file, String value) {
+  public CustomFilter(String name, String fields, File file, String value) {
+    this.name = requireNonNull(name);
     this.fields = requireNonNull(fields);
     this.file = requireNonNull(file);
     this.value = value;
@@ -50,6 +52,11 @@ public class CustomFilter implements Filter {
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public String getName() {
+    return name;
   }
 
   private Map<String, String> parseFields(VcfRecord vcfRecord) {

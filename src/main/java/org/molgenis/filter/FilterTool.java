@@ -20,7 +20,7 @@ public class FilterTool {
   public static final String SAMPLE = "sample";
   public static final String PARAMS = "params";
   private static final String FILTERFILE = "filterFile";
-  private static final String FILTER_LABELS = "FILTER_LABELS";
+  private static final String FILTER_LABELS = "FILTER";
   private static final String ROUTE = "route";
   private static final String OUTPUT_FILE_POSTFIX = ".filtered";
   private static final String FILTER_FILE_POSTFIX = ".filter";

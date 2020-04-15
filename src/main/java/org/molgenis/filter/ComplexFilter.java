@@ -8,8 +8,10 @@ import org.molgenis.vcf.VcfRecord;
 public class ComplexFilter implements Filter{
   private final List<Filter> filters;
   private final ComplexOperator operator;
+  private final String name;
 
-  public ComplexFilter(List<Filter> filters, ComplexOperator operator) {
+  public ComplexFilter(String name, List<Filter> filters, ComplexOperator operator) {
+    this.name = requireNonNull(name);
     this.filters = requireNonNull(filters);
     this.operator = requireNonNull(operator);
   }
@@ -31,5 +33,10 @@ public class ComplexFilter implements Filter{
       }
       return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
     }
+  }
+
+  @Override
+  public String getName() {
+    return name;
   }
 }

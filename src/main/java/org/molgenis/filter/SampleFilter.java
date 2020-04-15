@@ -16,8 +16,10 @@ public class SampleFilter implements Filter {
   private final SimpleOperator operator;
   private final String filterValue;
   private final String sampleId;
+  private final String name;
 
-  public SampleFilter(String field, SimpleOperator operator, String value, String sampleId) {
+  public SampleFilter(String name,String field, SimpleOperator operator, String value, String sampleId) {
+    this.name = requireNonNull(name);
     this.field = requireNonNull(field);
     this.operator = requireNonNull(operator);
     this.filterValue = requireNonNull(value);
@@ -126,5 +128,10 @@ public class SampleFilter implements Filter {
         ", filterValue='" + filterValue + '\'' +
         ", sampleId='" + sampleId + '\'' +
         '}';
+  }
+
+  @Override
+  public String getName() {
+    return name;
   }
 }

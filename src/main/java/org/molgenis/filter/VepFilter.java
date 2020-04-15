@@ -16,19 +16,23 @@ import org.molgenis.vcf.VcfRecord;
 import org.molgenis.vcf.utils.VepUtils;
 
 public class VepFilter implements Filter {
+  private final String name;
   private final String field;
   private final SimpleOperator operator;
   private String filterValue;
   private String columnName;
   private FileResource fileResource;
+  private String filename;
 
-  public VepFilter(String field, SimpleOperator operator, String value) {
+  public VepFilter(String name, String field, SimpleOperator operator, String value) {
+    this.name = name;
     this.field = requireNonNull(field);
     this.operator = requireNonNull(operator);
     this.filterValue = requireNonNull(value);
   }
 
-  public VepFilter(String field, SimpleOperator operator, String path, String column) {
+  public VepFilter(String name, String field, SimpleOperator operator, String path, String column) {
+    this.name = name;
     this.field = requireNonNull(field);
     this.operator = requireNonNull(operator);
     this.columnName = column;
@@ -39,6 +43,7 @@ public class VepFilter implements Filter {
 
   private void loadFile(String path) {
     File file = new File(path);
+    this.filename = file.getName();
     fileResource = new FileResource(file);
   }
 
@@ -151,5 +156,10 @@ public class VepFilter implements Filter {
         ", operator=" + operator +
         ", filterValue='" + filterValue + '\'' +
         '}';
+  }
+
+  @Override
+  public String getName() {
+    return name;
   }
 }

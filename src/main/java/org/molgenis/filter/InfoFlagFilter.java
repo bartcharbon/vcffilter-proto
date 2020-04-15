@@ -9,8 +9,10 @@ import org.molgenis.vcf.VcfRecord;
 public class InfoFlagFilter implements Filter {
   private final String field;
   private final Operator operator;
+  private final String name;
 
-  public InfoFlagFilter(String field, Operator operator) {
+  public InfoFlagFilter(String name, String field, Operator operator) {
+    this.name = name;
     this.field = requireNonNull(field);
     this.operator = requireNonNull(operator);
   }
@@ -25,5 +27,10 @@ public class InfoFlagFilter implements Filter {
       }
     }
     return new FilterResult(FilterUtils.toFilterResultEnum(filterResult == operator.equals(PRESENT)), vcfRecord);
+  }
+
+  @Override
+  public String getName() {
+    return name;
   }
 }

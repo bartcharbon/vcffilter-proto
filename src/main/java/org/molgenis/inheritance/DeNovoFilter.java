@@ -22,4 +22,9 @@ public class DeNovoFilter implements Filter {
     return new FilterResult(
         FilterUtils.toFilterResultEnum(deNovo(vcfRecord, pedigree, alleleIdx)), vcfRecord);
   }
+
+  @Override
+  public String getName() {
+    return "DeNovo";
+  }
 }

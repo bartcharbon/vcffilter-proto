@@ -52,6 +52,11 @@ public class TwiceOneGeneFilter implements Filter {
     return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
   }
 
+  @Override
+  public String getName() {
+    return "TwiceInOneGene";
+  }
+
   private boolean parentNotHasVariant(VcfRecord vcfRecord, List<VcfRecord> variantsInGene,
       Pedigree pedigree) {
     boolean result = true;

@@ -15,7 +15,7 @@ class CustomFilterTest {
     when(record.getChromosome()).thenReturn("X");
     ClassLoader classLoader = getClass().getClassLoader();
     File file = new File(classLoader.getResource("testPythonFilter.py").getFile());
-    CustomFilter filter = new CustomFilter("#CHROM", file, null);
+    CustomFilter filter = new CustomFilter("test", "#CHROM", file, null);
     assertTrue(filter.filter(record).result == FilterResultEnum.TRUE);
   }
 }

@@ -46,15 +46,4 @@ public class SimpleFilter {
   public void setColumn(String column) {
     this.column = column;
   }
-
-  @Override
-  public String toString() {
-    return "SimpleFilter{" +
-        "field='" + field + '\'' +
-        ", operator='" + operator + '\'' +
-        ", value='" + value + '\'' +
-        ", file='" + file + '\'' +
-        ", column='" + column + '\'' +
-        '}';
-  }
 }

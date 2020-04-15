@@ -46,6 +46,7 @@ public class FilterRunner {
   private final String routesFileHeaderName;
   private final String filterLabelsInfoField;
   private final boolean isLogicFiltering;
+  private final String routeInfoField;
   private boolean isLogRoute;
 
   private String LOGIC_FILTER_KEY = "FILTER_RESULT";
@@ -61,7 +62,8 @@ public class FilterRunner {
     this.archivedFilterFile = archivedFilterFile;
     this.filterFileHeaderName = filterFileHeaderName;
     this.routesFileHeaderName = routesFileHeaderName;
-    this.filterLabelsInfoField = filterLabelsInfoField;
+    this.filterLabelsInfoField = filterLabelsInfoField + "_LABELS";
+    this.routeInfoField = filterLabelsInfoField + "_ROUTE";
     this.routesFile = routesFile;
     this.isLogRoute = routesFile != null;
     this.isLogicFiltering = isLogicFiltering;
@@ -87,7 +89,9 @@ public class FilterRunner {
 
     Stream<VcfRecord> filtered = recordStream
         .map(record -> VcfUtils
-            .addOrUpdateInfoField(record, filterLabelsInfoField, ".", ".", "", true))
+            .addOrUpdateInfoField(record, filterLabelsInfoField, ".", ".", ".", true))
+        .map(record -> VcfUtils
+            .addOrUpdateInfoField(record, routeInfoField, ".", ".", ".", true))
         .map(record -> {
           try {
             return startFiltering(record, filters, routesWriter);
@@ -128,6 +132,7 @@ public class FilterRunner {
     List<String> vepValues = new ArrayList<>();
     Set<String> labels = new HashSet<>();
     boolean isAtLeastOneKeep = false;
+    String route = ".";//FIXME: always shows last one
     for (FilterResult result : results) {
       String[] values = VepUtils.getVepValues(result.getRecord());
       if (isLogicFiltering) {
@@ -146,6 +151,7 @@ public class FilterRunner {
       if (labelValues.length > 0) {
         labels.addAll(Arrays.asList(labelValues));
       }
+      route = VcfUtils.getInfoFieldValue(result.getRecord(), routeInfoField);
     }
     if (isLogicFiltering) {
       if (isAtLeastOneKeep) {
@@ -157,6 +163,7 @@ public class FilterRunner {
       }
     }
     vcfRecord = updateInfoField(vcfRecord, filterLabelsInfoField, Strings.join(labels, ","));
+    vcfRecord = updateInfoField(vcfRecord, routeInfoField, route);
     vcfRecord = updateInfoField(vcfRecord, VEP_INFO_NAME, Strings.join(vepValues, ","));
     return new FilterResult(TRUE, vcfRecord);
   }
@@ -184,20 +191,21 @@ public class FilterRunner {
     FilterResult filterResult = filterStep.getFilter().filter(record);
     FilterAction action = filterStep.getAction(filterResult.getResult());
     appendToRoute(route, " > ");
-    appendToRoute(route, filterStep.getKey() + "(" + filterResult.getResult() + ")");
-    filterResult = processLabels(record, filterResult, action);
+    appendToRoute(route, filterStep.getKey() + "=" + filterResult.getResult());
+    filterResult = processLabels(filterResult, action);
+    filterResult = processRoute(filterResult, action, filterStep.getFilter());
     if (action.getState() == FilterState.KEEP) {
       appendToRoute(route, " > KEEP" + "\n");
       if (isLogicFiltering) {
         filterResult.setRecord(addOrUpdateInfoField(filterResult.getRecord(), LOGIC_FILTER_KEY,
-            LOGIC_FILTER_RESULT_TRUE, LOGIC_FILTER_DESC, "1", true));
+            LOGIC_FILTER_RESULT_TRUE, LOGIC_FILTER_DESC, ".", true));
       }
       return filterResult;
     } else if (action.getState() == FilterState.REMOVE) {
       appendToRoute(route, " > REMOVE" + "\n");
       if (isLogicFiltering) {
         filterResult.setRecord(addOrUpdateInfoField(record, LOGIC_FILTER_KEY,
-            LOGIC_FILTER_RESULT_FALSE, LOGIC_FILTER_DESC, "1", true));
+            LOGIC_FILTER_RESULT_FALSE, LOGIC_FILTER_DESC, ".", true));
         return filterResult;
       }
       return null;
@@ -217,17 +225,38 @@ public class FilterRunner {
     }
   }
 
-  private FilterResult processLabels(VcfRecord record, FilterResult filterResult,
+  private FilterResult processLabels(FilterResult filterResult,
       FilterAction action) {
     if (action.getLabel() != null) {
       Set<String> labels = new HashSet<>();
-      String[] labelValues = VcfUtils.getInfoFieldValue(record, filterLabelsInfoField).split(",");
+      String[] labelValues = VcfUtils
+          .getInfoFieldValue(filterResult.getRecord(), filterLabelsInfoField).split(",");
       if ((labelValues.length == 1 && !labelValues[0].equals(".")) || labelValues.length > 1) {
         labels.addAll(Arrays.asList(labelValues));
       }
       labels.add(action.getLabel());
-      filterResult.setRecord(VcfUtils.updateInfoField(record, filterLabelsInfoField, Strings.join(labels,",")));
+      filterResult.setRecord(VcfUtils
+          .updateInfoField(filterResult.getRecord(), filterLabelsInfoField,
+              Strings.join(labels, ",")));
     }
+    return filterResult;
+  }
+
+  private FilterResult processRoute(FilterResult filterResult, FilterAction action, Filter filter) {
+    String route = VcfUtils.getInfoFieldValue(filterResult.getRecord(), routeInfoField);
+    if (route.equals(".")) {
+      route = "";
+    } else {
+      route = route + ",";
+    }
+    route = route + filter.getName() + ":" + filterResult.getResult();
+    if (action.getState() == FilterState.KEEP) {
+      route = route + ",KEEP";
+    } else if (action.getState() == FilterState.REMOVE) {
+      route = route + ",REMOVE";
+    }
+    filterResult
+        .setRecord(VcfUtils.updateInfoField(filterResult.getRecord(), routeInfoField, route));
     return filterResult;
   }
 }
