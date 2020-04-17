@@ -204,7 +204,7 @@ public class FilterRunner {
     } else if (action.getState() == FilterState.REMOVE) {
       appendToRoute(route, " > REMOVE" + "\n");
       if (isLogicFiltering) {
-        filterResult.setRecord(addOrUpdateInfoField(record, LOGIC_FILTER_KEY,
+        filterResult.setRecord(addOrUpdateInfoField(filterResult.getRecord(), LOGIC_FILTER_KEY,
             LOGIC_FILTER_RESULT_FALSE, LOGIC_FILTER_DESC, ".", true));
         return filterResult;
       }
