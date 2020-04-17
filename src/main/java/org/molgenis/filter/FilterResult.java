@@ -5,16 +5,16 @@ import static java.util.Objects.requireNonNull;
 import org.molgenis.vcf.VcfRecord;
 
 public class FilterResult {
-  boolean isPass;
+  FilterResultEnum result;
   VcfRecord record;
 
-  public FilterResult(boolean isPass, VcfRecord record) {
-    this.isPass = requireNonNull(isPass);
+  public FilterResult(FilterResultEnum result, VcfRecord record) {
+    this.result = requireNonNull(result);
     this.record = requireNonNull(record);
   }
 
-  public boolean getPass() {
-    return isPass;
+  public FilterResultEnum getResult() {
+    return result;
   }
 
   public VcfRecord getRecord() {

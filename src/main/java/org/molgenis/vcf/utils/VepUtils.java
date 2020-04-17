@@ -80,7 +80,6 @@ public class VepUtils {
         return info;
       }
     }
-    System.err.println("No VEP info field found in vcf"+record.getChromosome()+"_"+record.getPosition());
     return null;
   }
 

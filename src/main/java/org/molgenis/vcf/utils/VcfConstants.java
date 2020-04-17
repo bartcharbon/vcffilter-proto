@@ -1,7 +1,7 @@
 package org.molgenis.vcf.utils;
 
 public class VcfConstants {
-  public final static String CHROM = "#CHROM";
+  public final static String CHROM = "CHROM";
   public final static String POS = "POS";
   public final static String REF = "REF";
   public final static String ALT = "ALT";
