@@ -55,39 +55,44 @@ public class YamlLoader {
   }
 
   private static void createFilters(File inputFile, String sampleId, FilterSpec spec) {
-    if(spec.getSteps().getSimple()!=null) {
-      for (SimpleStep simple : spec.getSteps().getSimple()) {
-        filters.put(simple.getName(), toFilter(simple.getName(),simple.getFilter(), inputFile));
+    if (spec.getSteps() != null) {
+      if (spec.getSteps().getSimple() != null) {
+        for (SimpleStep simple : spec.getSteps().getSimple()) {
+          filters.put(simple.getName(), toFilter(simple.getName(), simple.getFilter(), inputFile));
+        }
       }
-    }
-    if(spec.getSteps().getCustom()!=null) {
-      for (SimpleStep simple : spec.getSteps().getSimple()) {
-        filters.put(simple.getName(), toCustomFilter(simple.getName(), simple.getFilter(), inputFile));
+      if (spec.getSteps().getCustom() != null) {
+        for (SimpleStep simple : spec.getSteps().getSimple()) {
+          filters.put(simple.getName(),
+              toCustomFilter(simple.getName(), simple.getFilter(), inputFile));
+        }
       }
-    }
-    if(spec.getSteps().getInfo()!=null){
-      for(SimpleStep simple: spec.getSteps().getInfo()){
-        filters.put(simple.getName(), toInfoFilter(simple.getName(),simple.getFilter(), inputFile));
+      if (spec.getSteps().getInfo() != null) {
+        for (SimpleStep simple : spec.getSteps().getInfo()) {
+          filters
+              .put(simple.getName(), toInfoFilter(simple.getName(), simple.getFilter(), inputFile));
+        }
       }
-    }
-    if(spec.getSteps().getInfoFlag()!=null){
-      for(FlagStep flag: spec.getSteps().getInfoFlag()){
-        filters.put(flag.getName(), toInfoFlagFilter(flag.getName(),flag.getFilter()));
+      if (spec.getSteps().getInfoFlag() != null) {
+        for (FlagStep flag : spec.getSteps().getInfoFlag()) {
+          filters.put(flag.getName(), toInfoFlagFilter(flag.getName(), flag.getFilter()));
+        }
       }
-    }
-    if(spec.getSteps().getVep()!=null) {
-      for (VepStep vep : spec.getSteps().getVep()) {
-        filters.put(vep.getName(), toVepFilter(vep.getName(),vep.getFilter(), inputFile));
+      if (spec.getSteps().getVep() != null) {
+        for (VepStep vep : spec.getSteps().getVep()) {
+          filters.put(vep.getName(), toVepFilter(vep.getName(), vep.getFilter(), inputFile));
+        }
       }
-    }
-    if(spec.getSteps().getSample()!=null) {
-      for (SimpleStep sample : spec.getSteps().getSample()) {
-        filters.put(sample.getName(), toFilter(sample.getName(),sample.getFilter(), sampleId, inputFile));
+      if (spec.getSteps().getSample() != null) {
+        for (SimpleStep sample : spec.getSteps().getSample()) {
+          filters.put(sample.getName(),
+              toFilter(sample.getName(), sample.getFilter(), sampleId, inputFile));
+        }
       }
-    }
-    if(spec.getSteps().getComplex()!=null) {
-      for (ComplexStep complex : spec.getSteps().getComplex()) {
-        filters.put(complex.getName(), toFilter(complex.getName(), complex.getFilter()));
+      if (spec.getSteps().getComplex() != null) {
+        for (ComplexStep complex : spec.getSteps().getComplex()) {
+          filters.put(complex.getName(), toFilter(complex.getName(), complex.getFilter()));
+        }
       }
     }
     filters.put(NO_OP, new NoOpFilter());
