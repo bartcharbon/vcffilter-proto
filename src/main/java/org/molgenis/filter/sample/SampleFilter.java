@@ -1,4 +1,4 @@
-package org.molgenis.filter;
+package org.molgenis.filter.sample;
 
 import static java.util.Objects.requireNonNull;
 import static org.molgenis.vcf.utils.VcfUtils.getSampleValue;
@@ -8,6 +8,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import joptsimple.internal.Strings;
+import org.molgenis.filter.Filter;
+import org.molgenis.filter.FilterResult;
+import org.molgenis.filter.FilterResultEnum;
+import org.molgenis.filter.SimpleOperator;
 import org.molgenis.vcf.VcfRecord;
 
 public class SampleFilter implements Filter {

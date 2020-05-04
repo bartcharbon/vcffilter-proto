@@ -1,4 +1,4 @@
-package org.molgenis.filter;
+package org.molgenis.filter.vep;
 
 import static java.util.Objects.requireNonNull;
 import static org.molgenis.filter.FilterUtils.SEPARATOR;
@@ -7,23 +7,24 @@ import static org.molgenis.filter.FilterUtils.containsAll;
 import static org.molgenis.filter.FilterUtils.containsAny;
 import static org.molgenis.filter.FilterUtils.containsNone;
 import static org.molgenis.filter.FilterUtils.containsWord;
-import static org.molgenis.vcf.utils.VcfUtils.getInfoFieldValue;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
-import joptsimple.internal.Strings;
+import org.molgenis.filter.Filter;
+import org.molgenis.filter.FilterResult;
+import org.molgenis.filter.FilterResultEnum;
+import org.molgenis.filter.SimpleOperator;
 import org.molgenis.vcf.VcfRecord;
+import org.molgenis.vcf.utils.VepUtils;
 
-public class InfoFilter implements Filter {
+public class VepFilter implements Filter {
+  private final String name;
   private final String field;
   private final SimpleOperator operator;
-  private final String filterValue;
-  private final String name;
+  private String filterValue;
 
-  public InfoFilter(String name, String field, SimpleOperator operator, String value) {
-    this.name = requireNonNull(name);
+  public VepFilter(String name, String field, SimpleOperator operator, String value) {
+    this.name = name;
     this.field = requireNonNull(field);
     this.operator = requireNonNull(operator);
     this.filterValue = requireNonNull(value);
@@ -31,33 +32,21 @@ public class InfoFilter implements Filter {
 
   @Override
   public FilterResult filter(VcfRecord vcfRecord) {
-      Object value = getValue(vcfRecord, field);
-      if (value == null) {
-        return new FilterResult(FilterResultEnum.MISSING, vcfRecord);
-      }
-      if (value instanceof String) {
-        if (filterSingleValue(value.toString())) {
-          return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
+    String[] vepValues = VepUtils.getVepValues(vcfRecord);
+    // boolean to indicate if any Vep hit contained a value for the filter field
+        if (vepValues.length > 0 && !vepValues[0].isEmpty()) {
+          String value = VepUtils.getValueForKey(field, vcfRecord.getVcfMeta(), vepValues[0]);
+          if(value.isEmpty()){
+            return new FilterResult(FilterResultEnum.MISSING, vcfRecord);
+          }
+          else if (filterSingleValue(value)) {
+            return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
+          }
+          else{
+            return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
+          }
         }
-        return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
-      } else if (value instanceof Collection) {
-        if (filterCollection((Collection<String>) value)) {
-          return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
-        }
-        return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
-      } else {
-        throw new IllegalStateException();
-    }
-  }
-
-  private boolean filterCollection(Collection<String> value) {
-    boolean subresult = false;
-    for (String subValue : value) {
-      if (!Strings.isNullOrEmpty(subValue) && filterSingleValue(subValue)) {
-        subresult = true;
-      }
-    }
-    return subresult;
+    return new FilterResult(FilterResultEnum.MISSING, vcfRecord);
   }
 
   private boolean filterSingleValue(String value) {
@@ -105,7 +94,7 @@ public class InfoFilter implements Filter {
         result = !value.equals(filterValue);
         break;
       case IN:
-        List<String> filtervalues = Arrays.asList(filterValue.split(SEPARATOR));
+        List<String> filtervalues = Arrays.asList(filterValue.split(","));
         result = filtervalues.contains(value);
         break;
       case PRESENT:
@@ -119,38 +108,6 @@ public class InfoFilter implements Filter {
             "Invalid filter operator, expecting one of [==,>=,<=,>,<,!=]");
     }
     return result;
-  }
-
-  private Object getValue(VcfRecord record, String field) {
-    return getInfoFieldValue(record, field);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    InfoFilter that = (InfoFilter) o;
-    return Objects.equals(field, that.field) &&
-        operator == that.operator &&
-        Objects.equals(filterValue, that.filterValue);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(field, operator, filterValue);
-  }
-
-  @Override
-  public String toString() {
-    return "InfoFilter{" +
-        "field='" + field + '\'' +
-        ", operator=" + operator +
-        ", filterValue='" + filterValue + '\'' +
-        '}';
   }
 
   @Override

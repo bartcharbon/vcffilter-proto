@@ -1,4 +1,4 @@
-package org.molgenis.filter;
+package org.molgenis.filter.basic;
 
 import static java.util.Objects.requireNonNull;
 import static org.molgenis.filter.FilterUtils.SEPARATOR;
@@ -7,69 +7,64 @@ import static org.molgenis.filter.FilterUtils.containsAll;
 import static org.molgenis.filter.FilterUtils.containsAny;
 import static org.molgenis.filter.FilterUtils.containsNone;
 import static org.molgenis.filter.FilterUtils.containsWord;
+import static org.molgenis.vcf.utils.VcfUtils.getVcfValue;
 
-import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
+import joptsimple.internal.Strings;
+import org.molgenis.filter.Filter;
+import org.molgenis.filter.FilterResult;
+import org.molgenis.filter.FilterResultEnum;
+import org.molgenis.filter.SimpleOperator;
 import org.molgenis.vcf.VcfRecord;
-import org.molgenis.vcf.utils.VepUtils;
 
-public class VepFilter implements Filter {
+public class SimpleFilter implements Filter {
   private final String name;
   private final String field;
   private final SimpleOperator operator;
-  private String filterValue;
-  private String columnName;
-  private FileResource fileResource;
-  private String filename;
+  private final String filterValue;
 
-  public VepFilter(String name, String field, SimpleOperator operator, String value) {
-    this.name = name;
+  public SimpleFilter(String name, String field, SimpleOperator operator, String value) {
+    this.name = requireNonNull(name);
     this.field = requireNonNull(field);
     this.operator = requireNonNull(operator);
     this.filterValue = requireNonNull(value);
   }
 
-  public VepFilter(String name, String field, SimpleOperator operator, String path, String column) {
-    this.name = name;
-    this.field = requireNonNull(field);
-    this.operator = requireNonNull(operator);
-    this.columnName = column;
-    if(path != null) {
-      loadFile(path);
-    }
-  }
-
-  private void loadFile(String path) {
-    File file = new File(path);
-    this.filename = file.getName();
-    fileResource = new FileResource(file);
-  }
-
   @Override
   public FilterResult filter(VcfRecord vcfRecord) {
-    String[] vepValues = VepUtils.getVepValues(vcfRecord);
-    // boolean to indicate if any Vep hit contained a value for the filter field
-        if (vepValues.length > 0 && !vepValues[0].isEmpty()) {
-          String value = VepUtils.getValueForKey(field, vcfRecord.getVcfMeta(), vepValues[0]);
-          if(value.isEmpty()){
-            return new FilterResult(FilterResultEnum.MISSING, vcfRecord);
-          }
-          else if (filterSingleValue(value)) {
-            return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
-          }
-          else{
-            return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
-          }
+      Object value = getVcfValue(vcfRecord, field);
+      if (value == null) {
+        return new FilterResult(FilterResultEnum.MISSING, vcfRecord);
+      }
+      if (value instanceof String) {
+        if (filterSingleValue(value.toString())) {
+          return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
         }
-    return new FilterResult(FilterResultEnum.MISSING, vcfRecord);
+        return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
+      } else if (value instanceof Collection) {
+        if (filterCollection((Collection<String>) value)) {
+          return new FilterResult(FilterResultEnum.TRUE, vcfRecord);
+        }
+        return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
+      } else {
+        throw new IllegalStateException();
+      }
+  }
+
+  private boolean filterCollection(Collection<String> value) {
+    boolean subresult = false;
+    for (String subValue : value) {
+      if (!Strings.isNullOrEmpty(subValue) && filterSingleValue(subValue)) {
+        subresult = true;
+      }
+    }
+    return subresult;
   }
 
   private boolean filterSingleValue(String value) {
-    if(fileResource != null){
-        return fileResource.contains(columnName, value);
-    }
     boolean result;
     switch (operator) {
       case EQ:
@@ -82,6 +77,12 @@ public class VepFilter implements Filter {
       case CONTAINS_WORD:
         result = containsWord(value, filterValue);
         break;
+      case NOT_CONTAINS:
+        result = !contains(value, filterValue);
+        break;
+      case NOT_CONTAINS_WORD:
+        result = !containsWord(value,filterValue);
+        break;
       case CONTAINS_ANY:
         result = containsAny(value.split(SEPARATOR), filterValue.split(SEPARATOR));
         break;
@@ -90,12 +91,6 @@ public class VepFilter implements Filter {
         break;
       case CONTAINS_NONE:
         result = containsNone(value.split(SEPARATOR), filterValue.split(SEPARATOR));
-        break;
-      case NOT_CONTAINS:
-        result = !contains(value, filterValue);
-        break;
-      case NOT_CONTAINS_WORD:
-        result = !containsWord(value,filterValue);
         break;
       case GREATER_OR_EQUAL:
         result = Double.valueOf(value) >= Double.valueOf(filterValue);
@@ -114,20 +109,23 @@ public class VepFilter implements Filter {
         result = !value.equals(filterValue);
         break;
       case IN:
-        List<String> filtervalues = Arrays.asList(filterValue.split(","));
+        List<String> filtervalues = Arrays.asList(filterValue.split(SEPARATOR));
         result = filtervalues.contains(value);
-        break;
-      case PRESENT:
-        result = !value.isEmpty();
-        break;
-      case NOT_PRESENT:
-        result = value.isEmpty();
         break;
       default:
         throw new IllegalArgumentException(
             "Invalid filter operator, expecting one of [==,>=,<=,>,<,!=]");
     }
     return result;
+  }
+
+  @Override
+  public String toString() {
+    return "SimpleFilter{" +
+        "field='" + field + '\'' +
+        ", operator=" + operator +
+        ", filterValue='" + filterValue + '\'' +
+        '}';
   }
 
   @Override
@@ -138,24 +136,15 @@ public class VepFilter implements Filter {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    VepFilter vepFilter = (VepFilter) o;
-    return Objects.equals(field, vepFilter.field) &&
-        operator == vepFilter.operator &&
-        Objects.equals(filterValue, vepFilter.filterValue);
+    SimpleFilter that = (SimpleFilter) o;
+    return field.equals(that.field) &&
+        operator == that.operator &&
+        filterValue.equals(that.filterValue);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(field, operator, filterValue);
-  }
-
-  @Override
-  public String toString() {
-    return "VepFilter{" +
-        "field='" + field + '\'' +
-        ", operator=" + operator +
-        ", filterValue='" + filterValue + '\'' +
-        '}';
   }
 
   @Override

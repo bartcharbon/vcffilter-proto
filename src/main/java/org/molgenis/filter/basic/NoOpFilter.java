@@ -1,4 +1,7 @@
-package org.molgenis.filter;
+package org.molgenis.filter.basic;
+import org.molgenis.filter.Filter;
+import org.molgenis.filter.FilterResult;
+import org.molgenis.filter.FilterResultEnum;
 import org.molgenis.vcf.VcfRecord;
 
 public class NoOpFilter implements Filter {

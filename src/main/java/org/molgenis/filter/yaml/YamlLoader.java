@@ -12,21 +12,24 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import org.molgenis.filter.ComplexFilter;
-import org.molgenis.filter.ComplexOperator;
-import org.molgenis.filter.CustomFilter;
+import org.molgenis.filter.complex.ComplexFilter;
+import org.molgenis.filter.complex.ComplexOperator;
+import org.molgenis.filter.custom.CustomFilter;
 import org.molgenis.filter.Filter;
 import org.molgenis.filter.FilterAction;
 import org.molgenis.filter.FilterState;
 import org.molgenis.filter.FilterStep;
-import org.molgenis.filter.InfoFilter;
-import org.molgenis.filter.InfoFlagFilter;
-import org.molgenis.filter.NoOpFilter;
+import org.molgenis.filter.info.InfoFileFilter;
+import org.molgenis.filter.info.InfoFilter;
+import org.molgenis.filter.info.InfoFlagFilter;
+import org.molgenis.filter.basic.NoOpFilter;
 import org.molgenis.filter.Operator;
-import org.molgenis.filter.SampleFilter;
-import org.molgenis.filter.SimpleFilter;
+import org.molgenis.filter.sample.SampleFilter;
+import org.molgenis.filter.basic.SimpleFilter;
 import org.molgenis.filter.SimpleOperator;
-import org.molgenis.filter.VepFilter;
+import org.molgenis.filter.vep.VepFileFilter;
+import org.molgenis.filter.vep.VepFilter;
+import org.molgenis.filter.info.InfoVepFilter;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
@@ -83,6 +86,11 @@ public class YamlLoader {
           filters.put(vep.getName(), toVepFilter(vep.getName(), vep.getFilter(), inputFile));
         }
       }
+      if (spec.getSteps().getVepInfo() != null) {
+        for (VepInfoStep vepInfo : spec.getSteps().getVepInfo()) {
+          filters.put(vepInfo.getName(), toVepInfoFilter(vepInfo.getName(), vepInfo.getFilter()));
+        }
+      }
       if (spec.getSteps().getSample() != null) {
         for (SimpleStep sample : spec.getSteps().getSample()) {
           filters.put(sample.getName(),
@@ -111,11 +119,15 @@ public class YamlLoader {
   private static Filter toVepFilter(String name, org.molgenis.filter.yaml.VepFilter filter, File inputFile) {
     if(filter.getFile() != null){
       String file = preProcessFilePath(filter.getFile(), inputFile);
-      return new VepFilter(name, filter.getField(),(SimpleOperator) getOperator(filter.getOperator()), file, filter.getColumn());
+      return new VepFileFilter(name, filter.getField(),(SimpleOperator) getOperator(filter.getOperator()), file, filter.getColumn());
     }
     else{
       return new VepFilter(name, filter.getField(),(SimpleOperator) getOperator(filter.getOperator()),filter.getValue());
     }
+  }
+
+  private static Filter toVepInfoFilter(String name, org.molgenis.filter.yaml.VepInfoFilter filter) {
+      return new InfoVepFilter(name, filter.getInfoField(), Integer.parseInt(filter.getInfoIndex()), filter.getVepField(), Integer.parseInt(filter.getVepIndex()), filter.getSeperator(), (SimpleOperator) getOperator(filter.getOperator()), filter.getValue());
   }
 
   private static Filter toCustomFilter(String name, org.molgenis.filter.yaml.SimpleFilter filter, File inputFile) {
@@ -126,7 +138,7 @@ public class YamlLoader {
   private static Filter toInfoFilter(String name, org.molgenis.filter.yaml.SimpleFilter filter, File inputFile) {
     if(filter.getFile() != null){
       String file = preProcessFilePath(filter.getFile(), inputFile);
-      return new InfoFilter(name, filter.getField(),(SimpleOperator) getOperator(filter.getOperator()), file);
+      return new InfoFileFilter(name, filter.getField(),(SimpleOperator) getOperator(filter.getOperator()), file, filter.getColumn());
     }
     else{
       return new InfoFilter(name, filter.getField(),(SimpleOperator) getOperator(filter.getOperator()), filter.getValue());

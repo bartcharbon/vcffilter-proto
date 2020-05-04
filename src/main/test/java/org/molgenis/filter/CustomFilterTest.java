@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
+import org.molgenis.filter.custom.CustomFilter;
 import org.molgenis.vcf.VcfRecord;
 
 class CustomFilterTest {

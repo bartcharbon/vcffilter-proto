@@ -1,8 +1,12 @@
-package org.molgenis.filter;
+package org.molgenis.filter.info;
 
 import static java.util.Objects.requireNonNull;
 import static org.molgenis.filter.FlagOperator.PRESENT;
 
+import org.molgenis.filter.Filter;
+import org.molgenis.filter.FilterResult;
+import org.molgenis.filter.FilterUtils;
+import org.molgenis.filter.Operator;
 import org.molgenis.vcf.VcfInfo;
 import org.molgenis.vcf.VcfRecord;
 

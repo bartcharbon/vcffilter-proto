@@ -18,7 +18,7 @@ public class FileResource {
   }
 
   private void loadFile(File file){
-    Scanner scanner = null;
+    Scanner scanner;
     try {
       scanner = new Scanner(file);
       loadHeader(scanner);

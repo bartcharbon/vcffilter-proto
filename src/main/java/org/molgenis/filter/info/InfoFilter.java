@@ -1,4 +1,4 @@
-package org.molgenis.filter;
+package org.molgenis.filter.info;
 
 import static java.util.Objects.requireNonNull;
 import static org.molgenis.filter.FilterUtils.SEPARATOR;
@@ -7,22 +7,26 @@ import static org.molgenis.filter.FilterUtils.containsAll;
 import static org.molgenis.filter.FilterUtils.containsAny;
 import static org.molgenis.filter.FilterUtils.containsNone;
 import static org.molgenis.filter.FilterUtils.containsWord;
-import static org.molgenis.vcf.utils.VcfUtils.getVcfValue;
+import static org.molgenis.vcf.utils.VcfUtils.getInfoFieldValue;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import joptsimple.internal.Strings;
+import org.molgenis.filter.Filter;
+import org.molgenis.filter.FilterResult;
+import org.molgenis.filter.FilterResultEnum;
+import org.molgenis.filter.SimpleOperator;
 import org.molgenis.vcf.VcfRecord;
 
-public class SimpleFilter implements Filter {
-  private final String name;
+public class InfoFilter implements Filter {
   private final String field;
   private final SimpleOperator operator;
   private final String filterValue;
+  private final String name;
 
-  public SimpleFilter(String name, String field, SimpleOperator operator, String value) {
+  public InfoFilter(String name, String field, SimpleOperator operator, String value) {
     this.name = requireNonNull(name);
     this.field = requireNonNull(field);
     this.operator = requireNonNull(operator);
@@ -31,7 +35,7 @@ public class SimpleFilter implements Filter {
 
   @Override
   public FilterResult filter(VcfRecord vcfRecord) {
-      Object value = getVcfValue(vcfRecord, field);
+      Object value = getValue(vcfRecord, field);
       if (value == null) {
         return new FilterResult(FilterResultEnum.MISSING, vcfRecord);
       }
@@ -47,7 +51,7 @@ public class SimpleFilter implements Filter {
         return new FilterResult(FilterResultEnum.FALSE, vcfRecord);
       } else {
         throw new IllegalStateException();
-      }
+    }
   }
 
   private boolean filterCollection(Collection<String> value) {
@@ -73,12 +77,6 @@ public class SimpleFilter implements Filter {
       case CONTAINS_WORD:
         result = containsWord(value, filterValue);
         break;
-      case NOT_CONTAINS:
-        result = !contains(value, filterValue);
-        break;
-      case NOT_CONTAINS_WORD:
-        result = !containsWord(value,filterValue);
-        break;
       case CONTAINS_ANY:
         result = containsAny(value.split(SEPARATOR), filterValue.split(SEPARATOR));
         break;
@@ -87,6 +85,12 @@ public class SimpleFilter implements Filter {
         break;
       case CONTAINS_NONE:
         result = containsNone(value.split(SEPARATOR), filterValue.split(SEPARATOR));
+        break;
+      case NOT_CONTAINS:
+        result = !contains(value, filterValue);
+        break;
+      case NOT_CONTAINS_WORD:
+        result = !containsWord(value,filterValue);
         break;
       case GREATER_OR_EQUAL:
         result = Double.valueOf(value) >= Double.valueOf(filterValue);
@@ -108,6 +112,12 @@ public class SimpleFilter implements Filter {
         List<String> filtervalues = Arrays.asList(filterValue.split(SEPARATOR));
         result = filtervalues.contains(value);
         break;
+      case PRESENT:
+        result = !value.isEmpty();
+        break;
+      case NOT_PRESENT:
+        result = value.isEmpty();
+        break;
       default:
         throw new IllegalArgumentException(
             "Invalid filter operator, expecting one of [==,>=,<=,>,<,!=]");
@@ -115,13 +125,8 @@ public class SimpleFilter implements Filter {
     return result;
   }
 
-  @Override
-  public String toString() {
-    return "SimpleFilter{" +
-        "field='" + field + '\'' +
-        ", operator=" + operator +
-        ", filterValue='" + filterValue + '\'' +
-        '}';
+  private Object getValue(VcfRecord record, String field) {
+    return getInfoFieldValue(record, field);
   }
 
   @Override
@@ -132,15 +137,24 @@ public class SimpleFilter implements Filter {
     if (o == null || getClass() != o.getClass()) {
       return false;
     }
-    SimpleFilter that = (SimpleFilter) o;
-    return field.equals(that.field) &&
+    InfoFilter that = (InfoFilter) o;
+    return Objects.equals(field, that.field) &&
         operator == that.operator &&
-        filterValue.equals(that.filterValue);
+        Objects.equals(filterValue, that.filterValue);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(field, operator, filterValue);
+  }
+
+  @Override
+  public String toString() {
+    return "InfoFilter{" +
+        "field='" + field + '\'' +
+        ", operator=" + operator +
+        ", filterValue='" + filterValue + '\'' +
+        '}';
   }
 
   @Override

@@ -26,34 +26,6 @@ public class VepUtils {
     return result;
   }
 
-  public static Set<String> getVepValues(String key, VcfRecord record, String allele){
-    Set<String> result = new HashSet<>();
-    String[] vepResults = getVepValues(record);
-    for(String singleVepResult : vepResults) {
-      String vepAllele = getValueForKey(ALLELE, record.getVcfMeta(), singleVepResult);
-      if(allele.equals(vepAllele)) {
-        result.add(getValueForKey(key, record.getVcfMeta(), singleVepResult));
-      }
-    }
-    return result;
-  }
-
-  public static Set<String> getVepValues(String key, VcfRecord record, String allele, String gene){
-    Set<String> result = new HashSet<>();
-    String[] vepResults = getVepValues(record);
-    for(String singleVepResult : vepResults) {
-      String vepAllele = getValueForKey(ALLELE, record.getVcfMeta(), singleVepResult);
-      String vepGene = getValueForKey(GENE, record.getVcfMeta(), singleVepResult);
-      if(allele.equals(vepAllele) && gene.equals(vepGene)) {
-        result.add(getValueForKey(key, record.getVcfMeta(), singleVepResult));
-      }
-      if(allele.equals(vepAllele)) {
-        result.add(getValueForKey(key, record.getVcfMeta(), singleVepResult));
-      }
-    }
-    return result;
-  }
-
   public static String[] getVepValues(VcfRecord record) {
     VcfInfo vepInfoField = getVepInfoField(record);
     if(vepInfoField == null){

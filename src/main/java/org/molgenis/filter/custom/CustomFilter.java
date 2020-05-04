@@ -1,4 +1,4 @@
-package org.molgenis.filter;
+package org.molgenis.filter.custom;
 
 import static java.util.Objects.requireNonNull;
 import static org.molgenis.vcf.utils.VcfUtils.getInfoFieldValue;
@@ -11,6 +11,9 @@ import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import org.molgenis.filter.Filter;
+import org.molgenis.filter.FilterResult;
+import org.molgenis.filter.FilterUtils;
 import org.molgenis.vcf.VcfRecord;
 
 public class CustomFilter implements Filter {

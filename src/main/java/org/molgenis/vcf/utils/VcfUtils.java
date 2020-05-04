@@ -58,26 +58,6 @@ public class VcfUtils {
     vcfMeta.addInfoMeta(new VcfMetaInfo(properties));
   }
 
-  public static VcfRecord addInfoFieldData(VcfRecord record, VcfMeta vcfMeta, String key,
-      String value) {
-    List<String> tokens = VcfUtils.getExistingVcfTokens(record);
-    tokens.add(VcfUtils.createInfoToken(record, key, value, false));
-    return new VcfRecord(vcfMeta, tokens.toArray(new String[0]));
-  }
-
-  public static List<String> getExistingVcfTokens(VcfRecord record) {
-    List<String> tokens = new ArrayList<>();
-    tokens.add(record.getChromosome());
-    tokens.add(String.valueOf(record.getPosition()));
-    List<String> identifiers = record.getIdentifiers();
-    tokens.add(!identifiers.isEmpty() ? identifiers.stream().collect(joining(";")) : MISSING_VALUE);
-    tokens.add(record.getReferenceAllele().toString());
-    tokens.add(StringUtils.join(record.getAlternateAlleles(), ","));
-    tokens.add(record.getQuality() != null ? record.getQuality() : ".");
-    tokens.add(record.getFilterStatus() != null ? record.getFilterStatus() : ".");
-    return tokens;
-  }
-
   private static String createInfoToken(VcfRecord record, String key, String value,
       boolean isReplace) {
     Iterable<VcfInfo> vcfInformations = record.getInformation();
@@ -124,14 +104,6 @@ public class VcfUtils {
 
   private static String createInfoTokenPart(String key, String value) {
     return key + '=' + value;
-  }
-
-  public static VcfRecord addInfoField(VcfRecord vcfRecord, String key, String value){
-    return addInfoField(vcfRecord, key, value, ".","");
-  }
-
-  public static VcfRecord addInfoField(VcfRecord vcfRecord, String key, String value, String number, String description){
-    return addOrUpdateInfoField(vcfRecord, key, value, description, number, false);
   }
 
   public static VcfRecord updateInfoField(VcfRecord vcfRecord, String key, String value){
@@ -249,15 +221,6 @@ public class VcfUtils {
     }
     return new VcfReader(
         new InputStreamReader(new FileInputStream(inputVcfFile)));
-  }
-
-  static VcfInfo getInfoField(VcfRecord record, String field) {
-    for (VcfInfo info : record.getInformation()) {
-      if (info.getKey().equals(field)) {
-        return info;
-      }
-    }
-    throw new RuntimeException("Info field not found in vcf");
   }
 
   public static Object getVcfValue(VcfRecord record, String field) {

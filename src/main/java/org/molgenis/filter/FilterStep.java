@@ -1,9 +1,6 @@
 package org.molgenis.filter;
 
-import static java.lang.Boolean.FALSE;
-import static java.lang.Boolean.TRUE;
 import static java.util.Objects.requireNonNull;
-import static org.molgenis.filter.FilterResultEnum.MISSING;
 
 public class FilterStep {
   private final String key;

@@ -37,25 +37,26 @@ public class FilterRunner {
 
   private static final String LOGIC_FILTER_RESULT_TRUE = "TRUE";
   private static final String LOGIC_FILTER_RESULT_FALSE = "FALSE";
+  //input
   private final File inputFile;
   private final String extension;
+  //output
   private final File outputFile;
-  private final File archivedFilterFile;
-  private final File routesFile;
-  private final String filterFileHeaderName;
-  private final String routesFileHeaderName;
   private final String filterLabelsInfoField;
-  private final boolean isLogicFiltering;
   private final String routeInfoField;
-  private boolean isLogRoute;
+  //logging
+  private final String filterFileHeaderName;
+  private final File archivedFilterFile;
+  private final String routesFileHeaderName;
+  private final File routesFile;
+  private final FilterConfig filterConfig;
 
   private String LOGIC_FILTER_KEY = "FILTER_RESULT";
   private static final String LOGIC_FILTER_DESC = "";
 
   public FilterRunner(File inputFile, String extension, File outputFile,
       File archivedFilterFile, String filterFileHeaderName,
-      String routesFileHeaderName, String filterLabelsInfoField, File routesFile,
-      boolean isLogicFiltering) {
+      String routesFileHeaderName, String filterLabelsInfoField, File routesFile, FilterConfig filterConfig) {
     this.inputFile = requireNonNull(inputFile);
     this.extension = requireNonNull(extension);
     this.outputFile = requireNonNull(outputFile);
@@ -65,16 +66,15 @@ public class FilterRunner {
     this.filterLabelsInfoField = filterLabelsInfoField + "_LABELS";
     this.routeInfoField = filterLabelsInfoField + "_ROUTE";
     this.routesFile = routesFile;
-    this.isLogRoute = routesFile != null;
-    this.isLogicFiltering = isLogicFiltering;
+    this.filterConfig = filterConfig;
   }
 
-  public void runFilters(Map<String, FilterStep> filters) throws Exception {
+  public void runFilters() throws Exception {
     Map<String, String> additionalHeaders = new HashMap();
     if (filterFileHeaderName != null && archivedFilterFile != null) {
       additionalHeaders.put(filterFileHeaderName, archivedFilterFile.getName());
     }
-    if (isLogRoute) {
+    if (filterConfig.isLogRoute()) {//FIXME: seperate file and info field route
       additionalHeaders.put(routesFileHeaderName, routesFile.getName());
     }
     Writer routesWriter = getRoutesWriter(routesFile);
@@ -94,7 +94,7 @@ public class FilterRunner {
             .addOrUpdateInfoField(record, routeInfoField, ".", ".", ".", true))
         .map(record -> {
           try {
-            return startFiltering(record, filters, routesWriter);
+            return startFiltering(record, routesWriter);
           } catch (IOException e) {
             throw new RuntimeException(e);
           }
@@ -105,17 +105,16 @@ public class FilterRunner {
     System.out.println("Filtered!");
   }
 
-  private FilterResult startFiltering(VcfRecord record, Map<String, FilterStep> filters,
-      Writer routesWriter) throws IOException {
+  private FilterResult startFiltering(VcfRecord record, Writer routesWriter) throws IOException {
 
-    FilterStep filterStep = StreamSupport.stream(filters.entrySet().spliterator(), false)
+    FilterStep filterStep = StreamSupport.stream(filterConfig.getFilters().entrySet().spliterator(), false)
         .findFirst().get().getValue();
     List<VcfRecord> splittedRecords = splitRecord(record);
     List<FilterResult> results = new ArrayList<>();
     int index = 0;
     for (VcfRecord splittedRecord : splittedRecords) {
       StringBuilder route = new StringBuilder(getRecordIdentifierString(record) + "_" + index);
-      FilterResult result = processFilterAction(filters, filterStep, splittedRecord, route);
+      FilterResult result = processFilterAction(filterStep, splittedRecord, route);
       if (result != null) {
         results.add(result);
       }
@@ -135,7 +134,7 @@ public class FilterRunner {
     String route = ".";//FIXME: always shows last one
     for (FilterResult result : results) {
       String[] values = VepUtils.getVepValues(result.getRecord());
-      if (isLogicFiltering) {
+      if (filterConfig.isLogicFiltering()) {
         String resultValue = VcfUtils.getInfoFieldValue(result.getRecord(), LOGIC_FILTER_KEY);
         if (resultValue.equals(LOGIC_FILTER_RESULT_TRUE)) {
           isAtLeastOneKeep = true;
@@ -153,7 +152,7 @@ public class FilterRunner {
       }
       route = VcfUtils.getInfoFieldValue(result.getRecord(), routeInfoField);
     }
-    if (isLogicFiltering) {
+    if (filterConfig.isLogicFiltering()) {
       if (isAtLeastOneKeep) {
         vcfRecord = addOrUpdateInfoField(vcfRecord, LOGIC_FILTER_KEY,
             LOGIC_FILTER_RESULT_TRUE, LOGIC_FILTER_DESC, "1", true);
@@ -178,16 +177,14 @@ public class FilterRunner {
   }
 
   private Writer getRoutesWriter(File routesFile) throws IOException {
-    if (isLogRoute) {
+    if (filterConfig.isLogRoute() && routesFile != null) {
       return new FileWriter(routesFile);
     } else {
       return new NullWriter();
     }
   }
 
-
-  private FilterResult processFilterAction(Map<String, FilterStep> filters,
-      FilterStep filterStep, VcfRecord record, StringBuilder route) {
+  private FilterResult processFilterAction(FilterStep filterStep, VcfRecord record, StringBuilder route) {
     FilterResult filterResult = filterStep.getFilter().filter(record);
     FilterAction action = filterStep.getAction(filterResult.getResult());
     appendToRoute(route, " > ");
@@ -196,14 +193,14 @@ public class FilterRunner {
     filterResult = processRoute(filterResult, action, filterStep.getFilter());
     if (action.getState() == FilterState.KEEP) {
       appendToRoute(route, " > KEEP" + "\n");
-      if (isLogicFiltering) {
+      if (filterConfig.isLogicFiltering()) {
         filterResult.setRecord(addOrUpdateInfoField(filterResult.getRecord(), LOGIC_FILTER_KEY,
             LOGIC_FILTER_RESULT_TRUE, LOGIC_FILTER_DESC, ".", true));
       }
       return filterResult;
     } else if (action.getState() == FilterState.REMOVE) {
       appendToRoute(route, " > REMOVE" + "\n");
-      if (isLogicFiltering) {
+      if (filterConfig.isLogicFiltering()) {
         filterResult.setRecord(addOrUpdateInfoField(filterResult.getRecord(), LOGIC_FILTER_KEY,
             LOGIC_FILTER_RESULT_FALSE, LOGIC_FILTER_DESC, ".", true));
         return filterResult;
@@ -211,16 +208,16 @@ public class FilterRunner {
       return null;
     } else {
       String nextFilter = action.getNextStep();
-      FilterStep nextFilterStep = filters.get(nextFilter);
+      FilterStep nextFilterStep = filterConfig.getFilters().get(nextFilter);
       if (nextFilterStep == null) {
         throw new RuntimeException("Filterstep '" + nextFilter + "' could not be resolved.");
       }
-      return processFilterAction(filters, nextFilterStep, filterResult.getRecord(), route);
+      return processFilterAction(nextFilterStep, filterResult.getRecord(), route);
     }
   }
 
   private void appendToRoute(StringBuilder route, String s) {
-    if (isLogRoute) {
+    if (filterConfig.isLogRoute()) {
       route.append(s);
     }
   }
