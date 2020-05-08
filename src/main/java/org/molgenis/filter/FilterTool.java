@@ -87,7 +87,7 @@ public class FilterTool {
     String extension = fullInputFileName.substring(fullInputFileName.indexOf('.'));
     String inputFileName = fullInputFileName.replace(extension,"");
     File outputFile = createOutputFile(inputFileName, outputDir, OUTPUT_FILE_POSTFIX + extension, isReplace);
-    File archivedFilterFile = createOutputFile(inputFileName, outputDir, FILTER_FILE_POSTFIX+YML, isReplace);
+    File archivedFilter = createOutputFile(inputFileName, outputDir, FILTER_FILE_POSTFIX+YML, isReplace);
     File routesFile = createOutputFile(inputFileName, outputDir, ROUTE_FILE_POSTFIX+TSV, isReplace);
 
     Map<String, String> params;
@@ -105,16 +105,17 @@ public class FilterTool {
     try {
       Map<String, FilterStep> filters = YamlLoader.loadFilterTree(filterFile, params, sampleId);
 
-      try (FileOutputStream copyStream = new FileOutputStream(archivedFilterFile)) {
+      try (FileOutputStream copyStream = new FileOutputStream(archivedFilter)) {
         Files.copy(filterFile.toPath(), copyStream);
       }
 
-      String filterFileHeaderName = FILTER_FILE_HEADER;
-      String routesFileHeaderName = ROUTES_FILE_HEADER;
-      String filterLabelsInfoField = FILTER_LABELS;
+      FilterConfig filterConfig = new FilterConfig(isLogicFiltering, filters);
+      ArchivedFile archivedFilterFile = new ArchivedFile(true, FILTER_FILE_HEADER, archivedFilter);
+      ArchivedFile routeFile = new ArchivedFile(true, ROUTES_FILE_HEADER, routesFile);
+      OutputConfig outputConfig = new OutputConfig(outputFile, FILTER_LABELS, archivedFilterFile, routeFile,true);
 
-      FilterRunner filterRunner = new FilterRunner(inputFile, extension, outputFile, archivedFilterFile,filterFileHeaderName, routesFileHeaderName, filterLabelsInfoField, routesFile, isLogicFiltering);
-      filterRunner.runFilters(filters);
+      FilterRunner filterRunner = new FilterRunner(inputFile, extension, filterConfig, outputConfig);
+      filterRunner.runFilters();
     } catch (Exception e) {
       e.printStackTrace();
     }

@@ -9,7 +9,7 @@ import org.molgenis.filter.FilterResult;
 import org.molgenis.filter.FilterResultEnum;
 import org.molgenis.filter.SimpleOperator;
 import org.molgenis.vcf.VcfRecord;
-import org.molgenis.vcf.utils.VcfUtils;
+import org.molgenis.filter.utils.VcfUtils;
 
 public class InfoFileFilter implements Filter {
   private final String name;

@@ -1,9 +1,9 @@
 package org.molgenis.filter.custom;
 
 import static java.util.Objects.requireNonNull;
-import static org.molgenis.vcf.utils.VcfUtils.getInfoFieldValue;
-import static org.molgenis.vcf.utils.VcfUtils.getSampleValue;
-import static org.molgenis.vcf.utils.VcfUtils.getVcfValue;
+import static org.molgenis.filter.utils.VcfUtils.getInfoFieldValue;
+import static org.molgenis.filter.utils.VcfUtils.getSampleValue;
+import static org.molgenis.filter.utils.VcfUtils.getVcfValue;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import org.molgenis.filter.Filter;
 import org.molgenis.filter.FilterResult;
-import org.molgenis.filter.FilterUtils;
+import org.molgenis.filter.utils.FilterUtils;
 import org.molgenis.vcf.VcfRecord;
 
 public class CustomFilter implements Filter {

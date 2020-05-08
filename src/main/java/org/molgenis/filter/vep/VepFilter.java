@@ -1,12 +1,12 @@
 package org.molgenis.filter.vep;
 
 import static java.util.Objects.requireNonNull;
-import static org.molgenis.filter.FilterUtils.SEPARATOR;
-import static org.molgenis.filter.FilterUtils.contains;
-import static org.molgenis.filter.FilterUtils.containsAll;
-import static org.molgenis.filter.FilterUtils.containsAny;
-import static org.molgenis.filter.FilterUtils.containsNone;
-import static org.molgenis.filter.FilterUtils.containsWord;
+import static org.molgenis.filter.utils.FilterUtils.SEPARATOR;
+import static org.molgenis.filter.utils.FilterUtils.contains;
+import static org.molgenis.filter.utils.FilterUtils.containsAll;
+import static org.molgenis.filter.utils.FilterUtils.containsAny;
+import static org.molgenis.filter.utils.FilterUtils.containsNone;
+import static org.molgenis.filter.utils.FilterUtils.containsWord;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,13 +15,14 @@ import org.molgenis.filter.FilterResult;
 import org.molgenis.filter.FilterResultEnum;
 import org.molgenis.filter.SimpleOperator;
 import org.molgenis.vcf.VcfRecord;
-import org.molgenis.vcf.utils.VepUtils;
+import org.molgenis.filter.utils.ComplexVcfInfoUtils;
 
 public class VepFilter implements Filter {
   private final String name;
   private final String field;
   private final SimpleOperator operator;
   private String filterValue;
+  //FIXME: private final MultiValueMode mode;
 
   public VepFilter(String name, String field, SimpleOperator operator, String value) {
     this.name = name;
@@ -32,10 +33,10 @@ public class VepFilter implements Filter {
 
   @Override
   public FilterResult filter(VcfRecord vcfRecord) {
-    String[] vepValues = VepUtils.getVepValues(vcfRecord);
+    String[] vepValues = ComplexVcfInfoUtils.getSubValues(vcfRecord, "CSQ");
     // boolean to indicate if any Vep hit contained a value for the filter field
         if (vepValues.length > 0 && !vepValues[0].isEmpty()) {
-          String value = VepUtils.getValueForKey(field, vcfRecord.getVcfMeta(), vepValues[0]);
+          String value = ComplexVcfInfoUtils.getValueForKey(field, vcfRecord.getVcfMeta(), vepValues[0], "CSQ", "\\|");
           if(value.isEmpty()){
             return new FilterResult(FilterResultEnum.MISSING, vcfRecord);
           }

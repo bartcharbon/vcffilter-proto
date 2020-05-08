@@ -1,7 +1,7 @@
 package org.molgenis.filter.sample;
 
 import static java.util.Objects.requireNonNull;
-import static org.molgenis.vcf.utils.VcfUtils.getSampleValue;
+import static org.molgenis.filter.utils.VcfUtils.getSampleValue;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -21,6 +21,7 @@ public class SampleFilter implements Filter {
   private final String filterValue;
   private final String sampleId;
   private final String name;
+  //FIXME: private final SampleMode mode;
 
   public SampleFilter(String name,String field, SimpleOperator operator, String value, String sampleId) {
     this.name = requireNonNull(name);

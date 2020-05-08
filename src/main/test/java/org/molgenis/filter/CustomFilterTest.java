@@ -17,6 +17,6 @@ class CustomFilterTest {
     ClassLoader classLoader = getClass().getClassLoader();
     File file = new File(classLoader.getResource("testPythonFilter.py").getFile());
     CustomFilter filter = new CustomFilter("test", "#CHROM", file, null);
-    assertTrue(filter.filter(record).result == FilterResultEnum.TRUE);
+    assertTrue(filter.filter(record).getResult() == FilterResultEnum.TRUE);
   }
 }

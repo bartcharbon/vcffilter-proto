@@ -1,8 +1,9 @@
-package org.molgenis.filter;
+package org.molgenis.filter.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import org.molgenis.filter.FilterResultEnum;
 
 public class FilterUtils {
   public static final String SEPARATOR = ",";

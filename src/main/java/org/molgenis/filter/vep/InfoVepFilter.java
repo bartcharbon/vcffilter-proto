@@ -1,12 +1,12 @@
-package org.molgenis.filter.info;
+package org.molgenis.filter.vep;
 
-import static org.molgenis.filter.FilterUtils.SEPARATOR;
-import static org.molgenis.filter.FilterUtils.contains;
-import static org.molgenis.filter.FilterUtils.containsAll;
-import static org.molgenis.filter.FilterUtils.containsAny;
-import static org.molgenis.filter.FilterUtils.containsNone;
-import static org.molgenis.filter.FilterUtils.containsWord;
-import static org.molgenis.vcf.utils.VcfUtils.getInfoFieldValue;
+import static org.molgenis.filter.utils.FilterUtils.SEPARATOR;
+import static org.molgenis.filter.utils.FilterUtils.contains;
+import static org.molgenis.filter.utils.FilterUtils.containsAll;
+import static org.molgenis.filter.utils.FilterUtils.containsAny;
+import static org.molgenis.filter.utils.FilterUtils.containsNone;
+import static org.molgenis.filter.utils.FilterUtils.containsWord;
+import static org.molgenis.filter.utils.VcfUtils.getInfoFieldValue;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -18,10 +18,11 @@ import org.molgenis.filter.FilterResult;
 import org.molgenis.filter.FilterResultEnum;
 import org.molgenis.filter.SimpleOperator;
 import org.molgenis.vcf.VcfRecord;
-import org.molgenis.vcf.utils.VepUtils;
+import org.molgenis.filter.utils.ComplexVcfInfoUtils;
 
 public class InfoVepFilter implements Filter {
 
+  private static final String VEP_INFO = "CSQ";
   private final String name;
   private final String infoField;
   private final int infoIndex;
@@ -138,7 +139,8 @@ public class InfoVepFilter implements Filter {
 
   private Object getValue(VcfRecord record) {
     String value = getInfoFieldValue(record, infoField);
-    String vepValue = VepUtils.getValueForKey(vepField, record.getVcfMeta(), getInfoFieldValue(record,"CSQ"));
+    String vepValue = ComplexVcfInfoUtils.getValueForKey(vepField, record.getVcfMeta(), getInfoFieldValue(record,
+        VEP_INFO), VEP_INFO, "\\|");
     String[] values = value.split(",");
     for(String singleInfoValue : values){
       String[] split = singleInfoValue.split(Pattern.quote(seperator));

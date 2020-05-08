@@ -19,15 +19,6 @@ public class FilterStep {
     this.missingAction = requireNonNull(missingAction);
   }
 
-  public FilterStep(String key,
-      Filter filter, FilterAction trueAction, FilterAction falseAction) {
-    this.key = requireNonNull(key);
-    this.trueAction = requireNonNull(trueAction);
-    this.falseAction = requireNonNull(falseAction);
-    this.filter = requireNonNull(filter);
-    this.missingAction = requireNonNull(falseAction);
-  }
-
   public String getKey() {
     return key;
   }

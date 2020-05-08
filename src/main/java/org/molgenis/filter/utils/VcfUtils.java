@@ -1,16 +1,16 @@
-package org.molgenis.vcf.utils;
+package org.molgenis.filter.utils;
 
 import static java.util.Arrays.stream;
 import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
-import static org.molgenis.vcf.utils.VcfConstants.ALT;
-import static org.molgenis.vcf.utils.VcfConstants.CHROM;
-import static org.molgenis.vcf.utils.VcfConstants.FILTER;
-import static org.molgenis.vcf.utils.VcfConstants.FORMAT;
-import static org.molgenis.vcf.utils.VcfConstants.ID;
-import static org.molgenis.vcf.utils.VcfConstants.POS;
-import static org.molgenis.vcf.utils.VcfConstants.QUAL;
-import static org.molgenis.vcf.utils.VcfConstants.REF;
+import static org.molgenis.filter.utils.VcfUtils.VcfConstants.ALT;
+import static org.molgenis.filter.utils.VcfUtils.VcfConstants.CHROM;
+import static org.molgenis.filter.utils.VcfUtils.VcfConstants.FILTER;
+import static org.molgenis.filter.utils.VcfUtils.VcfConstants.FORMAT;
+import static org.molgenis.filter.utils.VcfUtils.VcfConstants.ID;
+import static org.molgenis.filter.utils.VcfUtils.VcfConstants.POS;
+import static org.molgenis.filter.utils.VcfUtils.VcfConstants.QUAL;
+import static org.molgenis.filter.utils.VcfUtils.VcfConstants.REF;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -25,10 +25,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.StreamSupport;
 import net.sf.samtools.util.BlockCompressedInputStream;
+import org.apache.commons.io.LineIterator;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.molgenis.genotype.Allele;
-import org.molgenis.inheritance.pedigree.Pedigree;
 import org.molgenis.vcf.VcfInfo;
 import org.molgenis.vcf.VcfReader;
 import org.molgenis.vcf.VcfRecord;
@@ -115,6 +115,15 @@ public class VcfUtils {
     for(VcfInfo info : record.getInformation()){
       if(info.getKey().equals(key)){
         return info.getValRaw();
+      }
+    }
+    return null;
+  }
+
+  static VcfInfo getInfoField(VcfRecord record, String name) {
+    for(VcfInfo info : record.getInformation()){
+      if(info.getKey().equals(name)){
+        return info;
       }
     }
     return null;
@@ -214,14 +223,12 @@ public class VcfUtils {
     return vcfWriterFactory.create(outputVCFFile, vcfMeta, format);
   }
 
-  public static VcfReader getVcfReader(File inputVcfFile, boolean isCompressed) throws FileNotFoundException {
-    if(isCompressed) {
-      return new VcfReader(
-          new BlockCompressedInputStream(new FileInputStream(inputVcfFile)));
-    }
-    return new VcfReader(
-        new InputStreamReader(new FileInputStream(inputVcfFile)));
+  private AbstractFeatureReader<VariantContext, LineIterator> createReader(String inputFile) {
+    return AbstractFeatureReader
+        .getFeatureReader(inputFile,
+            new VCFCodec(), false);
   }
+
 
   public static Object getVcfValue(VcfRecord record, String field) {
     Object value;
@@ -303,18 +310,14 @@ public class VcfUtils {
     return value;
   }
 
-  public static boolean hasVariant(String gt, String alleleIdx) {
-    return !gt.contains(alleleIdx);
-  }
-
-  public static boolean deNovo(VcfRecord vcfRecord, Pedigree pedigree, String alleleIdx) {
-      String fatherGt = VcfUtils.getSampleValue(vcfRecord, "GT", pedigree.getFather().get().getPatientId()).toString();
-      String motherGt = VcfUtils.getSampleValue(vcfRecord, "GT", pedigree.getMother().get().getPatientId()).toString();
-      return hasVariant(fatherGt, alleleIdx) && hasVariant(motherGt, alleleIdx);
-    }
-
-  public static boolean isHmz(VcfRecord vcfRecord, String sampleId, String alleleIdx) {
-    String gt = VcfUtils.getSampleValue(vcfRecord, "GT", sampleId).toString();
-    return gt.equals(alleleIdx+"|"+alleleIdx)||gt.equals(alleleIdx+"/"+alleleIdx);
+  public class VcfConstants {
+    public final static String CHROM = "CHROM";
+    public final static String POS = "POS";
+    public final static String REF = "REF";
+    public final static String ALT = "ALT";
+    public final static String ID = "ID";
+    public final static String FILTER = "FILTER";
+    public final static String QUAL = "QUAL";
+    public final static String FORMAT = "FORMAT";
   }
 }

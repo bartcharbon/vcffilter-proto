@@ -3,13 +3,12 @@ package org.molgenis.filter;
 import static java.util.Objects.requireNonNull;
 import static org.molgenis.filter.FilterResultEnum.TRUE;
 import static org.molgenis.filter.FilterTool.GZIP_EXTENSION;
-import static org.molgenis.vcf.utils.VcfUtils.addOrUpdateInfoField;
-import static org.molgenis.vcf.utils.VcfUtils.getRecordIdentifierString;
-import static org.molgenis.vcf.utils.VcfUtils.getVcfReader;
-import static org.molgenis.vcf.utils.VcfUtils.getVcfWriter;
-import static org.molgenis.vcf.utils.VcfUtils.updateInfoField;
-import static org.molgenis.vcf.utils.VcfUtils.writeRecord;
-import static org.molgenis.vcf.utils.VepUtils.VEP_INFO_NAME;
+import static org.molgenis.filter.utils.VcfUtils.addOrUpdateInfoField;
+import static org.molgenis.filter.utils.VcfUtils.getRecordIdentifierString;
+import static org.molgenis.filter.utils.VcfUtils.getVcfReader;
+import static org.molgenis.filter.utils.VcfUtils.getVcfWriter;
+import static org.molgenis.filter.utils.VcfUtils.updateInfoField;
+import static org.molgenis.filter.utils.VcfUtils.writeRecord;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -27,60 +26,48 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import joptsimple.internal.Strings;
 import org.apache.commons.io.output.NullWriter;
+import org.molgenis.filter.utils.ComplexVcfInfoUtils;
 import org.molgenis.vcf.VcfReader;
 import org.molgenis.vcf.VcfRecord;
 import org.molgenis.vcf.VcfWriter;
-import org.molgenis.vcf.utils.VcfUtils;
-import org.molgenis.vcf.utils.VepUtils;
+import org.molgenis.filter.utils.VcfUtils;
 
 public class FilterRunner {
 
   private static final String LOGIC_FILTER_RESULT_TRUE = "TRUE";
   private static final String LOGIC_FILTER_RESULT_FALSE = "FALSE";
-  //input
+  private static final String VEP_INFO = "CSQ";
   private final File inputFile;
   private final String extension;
-  //output
-  private final File outputFile;
-  private final String filterLabelsInfoField;
+  private final String labelsInfoField;
   private final String routeInfoField;
-  //logging
-  private final String filterFileHeaderName;
-  private final File archivedFilterFile;
-  private final String routesFileHeaderName;
-  private final File routesFile;
   private final FilterConfig filterConfig;
+  private final OutputConfig outputConfig;
 
   private String LOGIC_FILTER_KEY = "FILTER_RESULT";
   private static final String LOGIC_FILTER_DESC = "";
 
-  public FilterRunner(File inputFile, String extension, File outputFile,
-      File archivedFilterFile, String filterFileHeaderName,
-      String routesFileHeaderName, String filterLabelsInfoField, File routesFile, FilterConfig filterConfig) {
+  public FilterRunner(File inputFile, String extension, FilterConfig filterConfig, OutputConfig outputConfig) {
     this.inputFile = requireNonNull(inputFile);
     this.extension = requireNonNull(extension);
-    this.outputFile = requireNonNull(outputFile);
-    this.archivedFilterFile = archivedFilterFile;
-    this.filterFileHeaderName = filterFileHeaderName;
-    this.routesFileHeaderName = routesFileHeaderName;
-    this.filterLabelsInfoField = filterLabelsInfoField + "_LABELS";
-    this.routeInfoField = filterLabelsInfoField + "_ROUTE";
-    this.routesFile = routesFile;
+    this.labelsInfoField = outputConfig.getInfoFieldPrefix() + "_LABELS";
+    this.routeInfoField = outputConfig.getInfoFieldPrefix() + "_ROUTE";
     this.filterConfig = filterConfig;
+    this.outputConfig = outputConfig;
   }
 
   public void runFilters() throws Exception {
     Map<String, String> additionalHeaders = new HashMap();
-    if (filterFileHeaderName != null && archivedFilterFile != null) {
-      additionalHeaders.put(filterFileHeaderName, archivedFilterFile.getName());
+    if (outputConfig.getArchivedFilterFile().isActive()) {
+      additionalHeaders.put(outputConfig.getArchivedFilterFile().getHeaderName().get(), outputConfig.getArchivedFilterFile().getFile().get().getName());
     }
-    if (filterConfig.isLogRoute()) {//FIXME: seperate file and info field route
-      additionalHeaders.put(routesFileHeaderName, routesFile.getName());
+    if (outputConfig.isLogRoute()) {//FIXME: seperate file and info field route
+      additionalHeaders.put(outputConfig.getRoutesFile().getHeaderName().get(), outputConfig.getRoutesFile().getFile().get().getName());
     }
-    Writer routesWriter = getRoutesWriter(routesFile);
+    Writer routesWriter = getRoutesWriter(outputConfig.getRoutesFile());
 
     VcfReader reader = getVcfReader(inputFile, extension.endsWith(GZIP_EXTENSION));
-    VcfWriter vcfWriter = getVcfWriter(outputFile, reader.getVcfMeta(), additionalHeaders,
+    VcfWriter vcfWriter = getVcfWriter(outputConfig.getOutputFile(), reader.getVcfMeta(), additionalHeaders,
         extension.endsWith(
             GZIP_EXTENSION));
 
@@ -89,7 +76,7 @@ public class FilterRunner {
 
     Stream<VcfRecord> filtered = recordStream
         .map(record -> VcfUtils
-            .addOrUpdateInfoField(record, filterLabelsInfoField, ".", ".", ".", true))
+            .addOrUpdateInfoField(record, labelsInfoField, ".", ".", ".", true))
         .map(record -> VcfUtils
             .addOrUpdateInfoField(record, routeInfoField, ".", ".", ".", true))
         .map(record -> {
@@ -133,7 +120,7 @@ public class FilterRunner {
     boolean isAtLeastOneKeep = false;
     String route = ".";//FIXME: always shows last one
     for (FilterResult result : results) {
-      String[] values = VepUtils.getVepValues(result.getRecord());
+      String[] values = ComplexVcfInfoUtils.getSubValues(result.getRecord(), VEP_INFO);
       if (filterConfig.isLogicFiltering()) {
         String resultValue = VcfUtils.getInfoFieldValue(result.getRecord(), LOGIC_FILTER_KEY);
         if (resultValue.equals(LOGIC_FILTER_RESULT_TRUE)) {
@@ -145,7 +132,7 @@ public class FilterRunner {
       } else if (values.length > 0) {
         throw new RuntimeException("More than one VEP value should not occur here.");
       }
-      String[] labelValues = VcfUtils.getInfoFieldValue(result.getRecord(), filterLabelsInfoField)
+      String[] labelValues = VcfUtils.getInfoFieldValue(result.getRecord(), labelsInfoField)
           .split(",");
       if (labelValues.length > 0) {
         labels.addAll(Arrays.asList(labelValues));
@@ -161,24 +148,24 @@ public class FilterRunner {
             LOGIC_FILTER_RESULT_FALSE, LOGIC_FILTER_DESC, "1", true);
       }
     }
-    vcfRecord = updateInfoField(vcfRecord, filterLabelsInfoField, Strings.join(labels, ","));
+    vcfRecord = updateInfoField(vcfRecord, labelsInfoField, Strings.join(labels, ","));
     vcfRecord = updateInfoField(vcfRecord, routeInfoField, route);
-    vcfRecord = updateInfoField(vcfRecord, VEP_INFO_NAME, Strings.join(vepValues, ","));
+    vcfRecord = updateInfoField(vcfRecord, VEP_INFO, Strings.join(vepValues, ","));
     return new FilterResult(TRUE, vcfRecord);
   }
 
   private List<VcfRecord> splitRecord(VcfRecord record) {
-    String[] vepValues = VepUtils.getVepValues(record);
+    String[] vepValues = ComplexVcfInfoUtils.getSubValues(record, VEP_INFO);
     List<VcfRecord> records = new ArrayList<>();
     for (String vepValue : vepValues) {
-      records.add(updateInfoField(record.createClone(), VEP_INFO_NAME, vepValue));
+      records.add(updateInfoField(record.createClone(), VEP_INFO, vepValue));
     }
     return records;
   }
 
-  private Writer getRoutesWriter(File routesFile) throws IOException {
-    if (filterConfig.isLogRoute() && routesFile != null) {
-      return new FileWriter(routesFile);
+  private Writer getRoutesWriter(ArchivedFile routesFile) throws IOException {
+    if (outputConfig.isLogRoute() && routesFile.isActive()) {
+      return new FileWriter(routesFile.getFile().get());
     } else {
       return new NullWriter();
     }
@@ -217,7 +204,7 @@ public class FilterRunner {
   }
 
   private void appendToRoute(StringBuilder route, String s) {
-    if (filterConfig.isLogRoute()) {
+    if (outputConfig.isLogRoute()) {
       route.append(s);
     }
   }
@@ -227,13 +214,13 @@ public class FilterRunner {
     if (action.getLabel() != null) {
       Set<String> labels = new HashSet<>();
       String[] labelValues = VcfUtils
-          .getInfoFieldValue(filterResult.getRecord(), filterLabelsInfoField).split(",");
+          .getInfoFieldValue(filterResult.getRecord(), labelsInfoField).split(",");
       if ((labelValues.length == 1 && !labelValues[0].equals(".")) || labelValues.length > 1) {
         labels.addAll(Arrays.asList(labelValues));
       }
       labels.add(action.getLabel());
       filterResult.setRecord(VcfUtils
-          .updateInfoField(filterResult.getRecord(), filterLabelsInfoField,
+          .updateInfoField(filterResult.getRecord(), labelsInfoField,
               Strings.join(labels, ",")));
     }
     return filterResult;

@@ -1,12 +1,11 @@
 package org.molgenis.filter;
 
 import static java.util.Objects.requireNonNull;
-
 import org.molgenis.vcf.VcfRecord;
 
 public class FilterResult {
-  FilterResultEnum result;
-  VcfRecord record;
+  private FilterResultEnum result;
+  private VcfRecord record;
 
   public FilterResult(FilterResultEnum result, VcfRecord record) {
     this.result = requireNonNull(result);

@@ -1,13 +1,13 @@
 package org.molgenis.filter.info;
 
 import static java.util.Objects.requireNonNull;
-import static org.molgenis.filter.FilterUtils.SEPARATOR;
-import static org.molgenis.filter.FilterUtils.contains;
-import static org.molgenis.filter.FilterUtils.containsAll;
-import static org.molgenis.filter.FilterUtils.containsAny;
-import static org.molgenis.filter.FilterUtils.containsNone;
-import static org.molgenis.filter.FilterUtils.containsWord;
-import static org.molgenis.vcf.utils.VcfUtils.getInfoFieldValue;
+import static org.molgenis.filter.utils.FilterUtils.SEPARATOR;
+import static org.molgenis.filter.utils.FilterUtils.contains;
+import static org.molgenis.filter.utils.FilterUtils.containsAll;
+import static org.molgenis.filter.utils.FilterUtils.containsAny;
+import static org.molgenis.filter.utils.FilterUtils.containsNone;
+import static org.molgenis.filter.utils.FilterUtils.containsWord;
+import static org.molgenis.filter.utils.VcfUtils.getInfoFieldValue;
 
 import java.util.Arrays;
 import java.util.Collection;

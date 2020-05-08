@@ -29,7 +29,7 @@ import org.molgenis.filter.basic.SimpleFilter;
 import org.molgenis.filter.SimpleOperator;
 import org.molgenis.filter.vep.VepFileFilter;
 import org.molgenis.filter.vep.VepFilter;
-import org.molgenis.filter.info.InfoVepFilter;
+import org.molgenis.filter.vep.InfoVepFilter;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 
@@ -119,7 +119,7 @@ public class YamlLoader {
   private static Filter toVepFilter(String name, org.molgenis.filter.yaml.VepFilter filter, File inputFile) {
     if(filter.getFile() != null){
       String file = preProcessFilePath(filter.getFile(), inputFile);
-      return new VepFileFilter(name, filter.getField(),(SimpleOperator) getOperator(filter.getOperator()), file, filter.getColumn());
+      return new VepFileFilter(name, filter.getField(), file, filter.getColumn());
     }
     else{
       return new VepFilter(name, filter.getField(),(SimpleOperator) getOperator(filter.getOperator()),filter.getValue());
